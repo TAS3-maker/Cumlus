@@ -2,9 +2,12 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Role, SecurityQuestion, Userlogin, UserQuestion } = require("../models/userModel");
+const crypto = require('crypto');
 const { generateOTP, sendEmail } = require('../email/emailUtils')
 const router = express.Router();
 const otpStore = new Map();
+
+const JWT_SECRET = crypto.randomBytes(64).toString('hex');
 router.post("/create-question", async (req, res) => {
   const { question } = req.body;
 
@@ -147,16 +150,13 @@ router.get("/security-questions", async (req, res) => {
 
 
   // Middleware to authenticate token
-function authenticateToken(req, res, next) {
+  function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Extract token after 'Bearer'
-
     if (!token) return res.status(401).json({ message: 'Token not provided' });
-
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) return res.status(403).json({ message: 'Invalid or expired token' });
-
-        req.user = decoded; // Attach decoded token data to request
+        req.user = decoded; // Attach decoded token data (including user_id) to the request object
         next(); // Proceed to the next middleware or route handler
     });
 }
@@ -229,7 +229,7 @@ router.post("/login", async (req, res) => {
     const questionExists = await UserQuestion.exists({ user_id: user._id });
 
     // Generate the token
-    const token = jwt.sign({ user_id: user._id }, "your_secret_key", { expiresIn: "5h" });
+    const token = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: "5h" });
 
     // Return response
     res.status(200).json({
@@ -376,4 +376,7 @@ router.get("/get-user", async (req, res) => {
 });
 
 
-module.exports = router;
+
+
+
+module.exports = { router, authenticateToken };
