@@ -1,37 +1,32 @@
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-
 // Generate a 6-digit OTP
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
-
 // Send OTP via email
 const sendEmail = async (email, otp) => {
     try {
         // Create a test SMTP service account from Ethereal
         const testAccount = await nodemailer.createTestAccount();
-
         // Create a transporter
         const transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
+            host: "smtp.gmail.com",
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
-                user: testAccount.user, // generated ethereal user
-                pass: testAccount.pass, // generated ethereal password
+                user: "sonu@techarchsoftwares.com", // generated ethereal user
+                pass: "3563Sonu@", // generated ethereal password
             },
         });
-
         // Email content
         const mailOptions = {
-            from: '"Your App" <no-reply@example.com>', // sender address
+            from: '"Cumulus" <sonu@techarchsoftwares.com>', // sender address
             to: email, // recipient's email
             subject: "Your OTP Code", // subject line
             text: `Your OTP is ${otp}`, // plain text body
             html: `<p>Your OTP is <strong>${otp}</strong>.</p>`, // HTML body
         };
-
         // Send email
         const info = await transporter.sendMail(mailOptions);
         console.log("Message sent: %s", info.messageId);
@@ -42,5 +37,4 @@ const sendEmail = async (email, otp) => {
         return { success: false, error };
     }
 };
-
 module.exports = { generateOTP, sendEmail };

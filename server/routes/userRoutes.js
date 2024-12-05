@@ -8,6 +8,9 @@ const router = express.Router();
 const otpStore = new Map();
 
 const JWT_SECRET = crypto.randomBytes(64).toString('hex');
+const REFRESH_TOKEN_SECRET = crypto.randomBytes(64).toString('hex');
+
+
 router.post("/create-question", async (req, res) => {
   const { question } = req.body;
 
@@ -25,62 +28,84 @@ router.post("/create-question", async (req, res) => {
   }
 });
 
+function generateAccessToken(user) {
+  return jwt.sign(user, JWT_SECRET, { expiresIn: '15m' });  // Access token expires in 15 minutes
+}
+
+// Helper function to generate refresh token
+function generateRefreshToken(user) {
+  return jwt.sign(user, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });  // Refresh token expires in 7 days
+}
+
 router.post("/send-otp", async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-      return res.status(400).json({ message: "Email is required." });
+    return res.status(400).json({ message: "Email is required." });
   }
 
   try {
-      // Generate OTP
-      const otp = generateOTP();
+    // Generate OTP
+    const otp = generateOTP();
 
-      // Send OTP via email
-      const emailResponse = await sendEmail(email, otp);
+    // Set OTP expiration time (e.g., 5 minutes)
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes from now
 
-      if (emailResponse.success) {
-          // Store the OTP securely (in memory, DB, or cache like Redis)
-          // For demo purposes, we return it in the response
-          res.status(200).json({
-              message: "OTP sent successfully.",
-              otp, // Do not expose OTP in production
-              previewURL: emailResponse.previewURL,
-          });
-      } else {
-          res.status(500).json({ message: "Error sending OTP email.", error: emailResponse.error });
-      }
+    // Store OTP in the otpStore with expiration
+    otpStore.set(email, { otp, expiresAt });
+    console.log("Stored OTP for email:", email, otpStore.get(email));
+
+    // Send OTP via email
+    const emailResponse = await sendEmail(email, otp);
+
+    if (emailResponse.success) {
+      res.status(200).json({
+        message: "OTP sent successfully.",
+        otp, // For testing only; do not expose in production
+        previewURL: emailResponse.previewURL,
+      });
+    } else {
+      res.status(500).json({ message: "Error sending OTP email.", error: emailResponse.error });
+    }
   } catch (error) {
-      console.error("Error sending OTP:", error);
-      res.status(500).json({ message: "Error generating or sending OTP.", error: error.message });
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ message: "Error generating or sending OTP.", error: error.message });
   }
 });
+
 
 router.post("/confirm-otp", async (req, res) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
+    console.error("Email or OTP missing.");
     return res.status(400).json({ message: "Email and OTP are required." });
   }
 
   try {
+    console.log("Looking for OTP for email:", email);
     const storedOtp = otpStore.get(email);
+    console.log("Stored OTP details:", storedOtp);
 
     if (!storedOtp) {
+      console.error("OTP not found for email:", email);
       return res.status(400).json({ message: "OTP not found or expired." });
     }
 
     if (Date.now() > storedOtp.expiresAt) {
+      console.error("OTP expired for email:", email);
       otpStore.delete(email); // Remove expired OTP
       return res.status(400).json({ message: "OTP expired." });
     }
 
     if (storedOtp.otp !== otp) {
+      console.error("Invalid OTP for email:", email);
       return res.status(400).json({ message: "Invalid OTP." });
     }
 
     // OTP is valid, remove it from the store
     otpStore.delete(email);
+    console.log("OTP verified successfully for email:", email);
 
     // Further actions (e.g., account verification, password reset, etc.)
     res.status(200).json({ message: "OTP verified successfully." });
@@ -89,6 +114,7 @@ router.post("/confirm-otp", async (req, res) => {
     res.status(500).json({ message: "Error confirming OTP.", error: error.message });
   }
 });
+
 
 // Example backend route for checking phone number
 router.post('/check-phone', async (req, res) => {
@@ -106,6 +132,26 @@ router.post('/check-phone', async (req, res) => {
       console.error("Error checking phone number:", error);
       res.status(500).json({ message: "Error checking phone number.", error: error.message });
   }
+});
+
+router.post('/token', (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+      return res.status(401).json({ message: 'Refresh token required' });
+  }
+
+  // Verify the refresh token
+  jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+          return res.status(403).json({ message: 'Invalid refresh token' });
+      }
+
+      // Generate new access token
+      const accessToken = generateAccessToken({ username: decoded.username });
+
+      res.json({ accessToken });
+  });
 });
 
 
@@ -209,32 +255,39 @@ router.post("/signup", async (req, res) => {
 
 
 // POST Route for User Login
+// Route for user login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find the user
     const user = await Userlogin.findOne({ email }).populate("roles.role_id");
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    // Check if security questions exist
     const questionExists = await UserQuestion.exists({ user_id: user._id });
 
-    // Generate the token
-    const token = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: "5h" });
+    // Generate the access token
+    const accessToken = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: "15m" });
 
-    // Return response
+    // Generate the refresh token
+    const refreshToken = jwt.sign({ user_id: user._id }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+    // Send the refresh token as an HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Set secure cookie in production
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days expiration
+    });
+
     res.status(200).json({
       message: "Login successful.",
-      token,
+      accessToken,
       user: {
         user_id: user._id,
         username: user.username,
@@ -243,8 +296,8 @@ router.post("/login", async (req, res) => {
           role_id: role.role_id._id,
           roleName: role.role_id.roleName,
         })),
-        questions: !!questionExists, // Dynamically set
-        phoneNumber:user.phoneNumber,
+        questions: !!questionExists,
+        phoneNumber: user.phoneNumber,
       },
     });
   } catch (error) {
@@ -252,6 +305,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Error during login", error: error.message });
   }
 });
+
 
 
 router.post("/set-questions", async (req, res) => {
