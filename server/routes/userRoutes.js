@@ -29,7 +29,7 @@ router.post("/create-question", async (req, res) => {
 });
 
 function generateAccessToken(user) {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: '15m' });  // Access token expires in 15 minutes
+  return jwt.sign(user, JWT_SECRET, { expiresIn: '5h' });  // Access token expires in 15 minutes
 }
 
 // Helper function to generate refresh token
@@ -245,13 +245,20 @@ router.post("/signup", async (req, res) => {
 
     res.status(201).json({
       message: "User created successfully",
-      user: { username, email, questions: newUser.questions },
+      user: {
+        user_id: newUser._id,  // Add user_id in the response
+        username: newUser.username,
+        email: newUser.email,
+        questions: newUser.questions,
+      },
     });
   } catch (error) {
     console.error("Error during signup:", error);
     res.status(500).json({ message: "Error during signup", error: error.message });
   }
 });
+
+
 
 
 // POST Route for User Login
@@ -273,7 +280,7 @@ router.post("/login", async (req, res) => {
     const questionExists = await UserQuestion.exists({ user_id: user._id });
 
     // Generate the access token
-    const accessToken = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: "15m" });
+    const accessToken = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: "5h" });
 
     // Generate the refresh token
     const refreshToken = jwt.sign({ user_id: user._id }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });

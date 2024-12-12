@@ -12,16 +12,21 @@ const sendEmail = async (email, otp) => {
         // Create a transporter
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 587,
-            secure: false, // true for 465, false for other ports
+            port: 587, // For TLS
+            secure: false, // Set false for port 587
             auth: {
-                user: "sonu@techarchsoftwares.com", // generated ethereal user
-                pass: "3563Sonu@", // generated ethereal password
+                user: "cumulus545@gmail.com",
+                pass: "capr cvjb vrxf ygbt",
             },
         });
+        
+        
+        
+        
+        
         // Email content
         const mailOptions = {
-            from: '"Cumulus" <sonu@techarchsoftwares.com>', // sender address
+            from: '"Cumulus" <cumulus545@gmail.com>', // sender address
             to: email, // recipient's email
             subject: "Your OTP Code", // subject line
             text: `Your OTP is ${otp}`, // plain text body
