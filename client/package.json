@@ -1,0 +1,62 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/material": "^6.1.8",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "cors": "^2.8.5",
+    "firebase": "^11.0.2",
+    "lucide-react": "^0.460.0",
+    "mammoth": "^1.8.0",
+    "otp-input-react": "^0.3.0",
+    "pdfkit": "^0.15.1",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "react-axios": "^2.0.6",
+    "react-dom": "^18.3.1",
+    "react-h5-audio-player": "^3.9.3",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^5.3.0",
+    "react-native-image-viewing": "^0.2.2",
+    "react-native-pdf": "^6.7.6",
+    "react-phone-input-2": "^2.15.1",
+    "react-router-dom": "^6.28.0",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^10.0.6",
+    "react-viewer": "^3.2.2",
+    "web-vitals": "^2.1.4",
+    "zustand": "^5.0.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.15"
+  }
+}
