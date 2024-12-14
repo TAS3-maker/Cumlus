@@ -220,46 +220,43 @@ router.post("/delete-file", authenticateToken, async (req, res) => {
 }); 
 router.post("/delete-folder", authenticateToken, async (req, res) => {
   try {
-    const user_id = req.user.user_id; // Extract user ID from the authenticated token
+    const user_id = req.user.user_id; 
     const { folder_id } = req.body;
-    
+
     if (!folder_id) {
       return res.status(400).json({ message: "Folder ID is required." });
     }
 
-    // Find the folder by ID and validate ownership
     const folder = await Folder.findOne({ _id: folder_id, user_id: user_id });
     if (!folder) {
       return res.status(404).json({ message: "Folder not found or access denied." });
     }
 
-    // Check if there are any files in the folder
     const files = await File.find({ folder_id: folder_id });
     if (files.length > 0) {
       return res.status(400).json({ message: "Folder contains files. Delete files first before deleting the folder." });
     }
 
-    // Decrypt the folder link to get the S3 folder key
     const folderLink = decryptField(folder.aws_folder_link, folder.iv_folder_link);
     const folderKey = decodeURIComponent(folderLink.split(".com/")[1]);
 
-    // Create the DeleteObjectCommand to delete the folder from S3
     const deleteFolderParams = {
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: folderKey,
     };
-    const deleteFolderCommand = new DeleteObjectCommand(deleteFolderParams);
-    await s3.send(deleteFolderCommand); // Send the delete command to S3
 
-    // Delete the folder entry from the database
+    const deleteFolderCommand = new DeleteObjectCommand(deleteFolderParams);
+    await s3.send(deleteFolderCommand);
+
     await Folder.deleteOne({ _id: folder_id });
 
     res.status(200).json({ message: "Folder deleted successfully." });
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    console.error("Error deleting folder:", error.message, error.stack);
     res.status(500).json({ message: "Error deleting folder.", error: error.message });
   }
 });
+
 // API to get all files for logged-in user
 router.get("/get-all-files", authenticateToken, async (req, res) => {
   try {

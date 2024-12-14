@@ -1,15 +1,61 @@
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import PropTypes from 'prop-types';
+
 import { Search, Bell, ZapIcon, Menu } from "lucide-react";
 import ClockClockwise from "../../assets/ClockClockwise.png";
 import profile from "../../assets/profile.jpg";
 // import Sidebar from "../../Component/Main/Sidebar";
 import MobileSidebar from "../../Component/Main/MobileSidebar";
-import { Link } from "react-router-dom";
+import { Link , NavLink } from "react-router-dom";
 // import { Sheet, SheetContent, SheetTrigger } from "@radix-ui/react-sheet";
-
+import fetchUserData from "./fetchUserData";
 const Navbar = ({onFolderSelect}) => {
     const [showSearch, setShowSearch] = useState(false);
+    // const active = localStorage.getItem('active');
+    // const membership = localStorage.getItem('membership');
+    const [userData, setUserData] = useState(null);
+    const [error, setError] = useState(null);
+    const [isMembershipActive, setIsMembershipActive] = useState(false);
+    const [membershipDetail, setMembershipDetail] = useState(null);
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [deletebutton1, setDeletebutton1] = useState(false);
+    useEffect(() => {
+        const getUserData = async () => {
+            try {
+                const data = await fetchUserData();              
+                if (!data?.user) {
+                    throw new Error("Invalid response structure");
+                }
+    
+                setUserData(data);
+                console.log("data",data);
+                console.log("data user",data.user);
+                setIsMembershipActive(data.user.activeMembership);
+                setMembershipDetail(data.user.memberships);
+                console.log("details",data.user.membershipDetail);
+                console.log("membership",data.user.isMembershipActive);
+            } catch (err) {
+                setError(err.message || "Failed to fetch user data");
+            }
+        };
+        getUserData();
+    }, []);
+    
+    useEffect(() => {
+        // Retrieve the user data from localStorage
+        const storedUser = localStorage.getItem("user");
+        const storedEmail = localStorage.getItem("email");
+        console.log("krcnjrncirc", storedUser);
+        console.log("krcnjrncirc", storedEmail);
+        setEmail(storedUser);
+       
+      }, []);
+      
+      
+      
+    
+
 
     return (
         <nav className="flex items-center justify-between px-0 md:px-8 py-3 bg-white shadow-md">
@@ -53,13 +99,17 @@ const Navbar = ({onFolderSelect}) => {
             </div>
 
             {/* Actions */}
+            
             <div className="flex items-center space-x-1 md:space-x-4 px-3">
+
+                {!isMembershipActive && (
                 <Link to="/subscription">
                     <span className="flex border-2 border-blue-500 p-0.5 rounded-sm cursor-pointer">
                         <ZapIcon className="h-5 w-5 md:h-6 md:w-6 fill-blue-500 stroke-none" />
                         <button className="text-blue-500 text-xs md:text-sm">Subscribe</button>
                     </span>
                 </Link>
+                )}
                 <span>
                     <img src={ClockClockwise} alt="Clock Icon" className="h-7 w-7" />
                 </span>
@@ -73,9 +123,10 @@ const Navbar = ({onFolderSelect}) => {
                         alt="User"
                         className="h-8 w-8 rounded-full object-cover"
                     />
-                    <p className="text-black mt-1 ml-1 hidden md:block">Alice James</p>
+                    <p className="text-black mt-1 ml-1 hidden md:block">{email}</p>
                 </div>
-            </div>
+            </div>                  
+
         </nav>
     );
 };

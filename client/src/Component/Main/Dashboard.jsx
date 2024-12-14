@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import fetchUserData from "./fetchUserData";
 import {
 
   ArrowRight,
@@ -19,7 +19,7 @@ import {
   Users,
 
   ChevronDown,
-
+  Camera,
   Download,
 
   Loader2,
@@ -42,7 +42,7 @@ import axios from "axios";
 
 import mammoth from "mammoth";
 
-import { useParams } from "react-router-dom";
+import { useParams  ,NavLink} from "react-router-dom";
 
 import useLoadingStore from "../../store/UseLoadingStore";
 
@@ -93,9 +93,9 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   const [fileData, setFileData] = useState(null);
 
   const [isOverlayVisible, setOverlayVisible] = useState(false);
-
-
-
+  const [email, setEmail] = useState("");
+  const [name1, setName1] = useState("");
+  const [designers, setDesigners] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState("");
 
   const [customFileName, setCustomFileName] = useState(""); // State to store the custom file name
@@ -136,45 +136,52 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
   const [deletebutton, setDeletebutton] = useState(false);
 
-  const [people, setPeople] = useState([
+  // const [people, setPeople] = useState([
 
-    { name: "Hariom Gupta (you)", email: "hg119147@gmail.com", role: "Owner" },
+  //   { name: "Hariom Gupta (you)", email: "hg119147@gmail.com", role: "Owner" },
 
-    { name: "Akash", email: "Akahs@gmail.com", role: "" },
+  //   { name: "Akash", email: "Akahs@gmail.com", role: "" },
 
-  ]);
+  // ]);
+  const [people, setPeople] = useState([]);
+  const [showDesignerPopup, setShowDesignerPopup] = useState(false); // Toggles the popup visibility
+  const [designeeName, setDesigneeName] = useState(""); // Holds the input for designee name
+  const [designeePhone, setDesigneePhone] = useState(""); // Holds the input for designee phone number
+  const [designeeEmail, setDesigneeEmail] = useState(""); // Holds the input for designee email
 
   const [need, setNeed] = useState([]);
 
   const [token, setToken] = useState([]);
 
-  const [users, setUsers] = useState([
+  // const [users, setUsers] = useState([
 
-    {
+  //   {
 
-      name: "Hariom Gupta (you)",
+  //     name: "Hariom Gupta (you)",
 
-      email: "hg119147@gmail.com",
+  //     email: "hg119147@gmail.com",
 
-      role: "Owner",
+  //     role: "Owner",
 
-      permission: "Owner",
+  //     permission: "Owner",
 
-    },
+  //   },
 
-    {
+  //   {
 
-      name: "Akash",
+  //     name: "Akash",
 
-      email: "Akahs@gmail.com",
+  //     email: "Akahs@gmail.com",
 
-      role: "User",
+  //     role: "User",
 
-      permission: "Only View",
+  //     permission: "Only View",
 
-    },
+  //   },
 
-  ]);
+  // ]);
+
+  const [users, setUsers] = useState([]);
 
   const [newUser, setNewUser] = useState("");
 
@@ -183,6 +190,31 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
   const [access, setAccess] = useState(false);
+  const [isMembershipActive, setIsMembershipActive] = useState(false);
+  const [membershipDetail, setMembershipDetail] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [deletebutton1, setDeletebutton1] = useState(false);
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const data = await fetchUserData();
+        if (!data?.user) {
+          throw new Error("Invalid response structure");
+        }
+
+        setUserData(data);
+        console.log("data", data);
+        console.log("data user", data.user);
+        setIsMembershipActive(data.user.activeMembership);
+        setMembershipDetail(data.user.memberships);
+        console.log("details", data.user.membershipDetail);
+        console.log("membership", data.user.isMembershipActive);
+      } catch (err) {
+        setError(err.message || "Failed to fetch user data");
+      }
+    };
+    getUserData();
+  }, []);
 
   const handleUsersClick = (fileId) => {
 
@@ -201,6 +233,19 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   const handleMessageChange = (e) => setMessage(e.target.value);
 
   const handleNotifyChange = () => setNotify(!notify);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedEmail = localStorage.getItem("email");
+  
+    console.log("krcnjrncirc", storedUser);
+    console.log("krcnjrncirc", storedEmail);
+  
+    setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
+    setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
+  }, []);
+  
+  
 
 
 
@@ -278,14 +323,24 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       console.error('Error preparing file download:', error);
 
-      alert('Error preparing file download. Please try again.');
+      // alert('Error preparing file download. Please try again.');
 
     }
 
   };
 
 
-
+  const handleAddDesignee = () => {
+    if (designeeName && designeePhone && designeeEmail) {
+      setDesigners([...designers, designeeName]); // Add the new designer to the list
+      setShowDesignerPopup(false); // Close the popup
+      setDesigneeName(""); // Reset the input fields
+      setDesigneePhone("");
+      setDesigneeEmail("");
+    } else {
+      setError("Please fill out all fields before inviting a designee.");
+    }
+  };
 
   const closeOverlay = () => {
 
@@ -1069,96 +1124,80 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
   const fetchFileContent = async (fileId) => {
-
     try {
-
       setLoading(true);
-
       setError("");
-
+  
       const token = localStorage.getItem("token");
-
-      console.log(token);
-
-      console.log("xknwjxbexnbc", fileId);
-
-
-
-      const response = await axios.post(
-
-        "http://localhost:3000/api/view-file-content",
-
-        { fileId: fileId },
-
-        {
-
-          headers: {
-
-            Authorization: `Bearer ${token}`,
-
-          },
-
-        }
-
-      );
-
-      console.log("xknwjxbexnbc", response);
-
-      const { file_name, file_url, file_type } = response.data;
-
-
-
-      if (!file_url) {
-
-        throw new Error("File URL is missing from the response.");
-
+      console.log("Retrieved Token:", token);
+  
+      if (!token) {
+        setError("Token is missing. Please log in again.");
+        return;
       }
-
-
-
-      // Log the file data for debugging
-
-      console.log("File Name:", file_name);
-
-      console.log("File URL:", file_url);
-
-      console.log("File Type:", file_type);
-
-
-
-      setFileData({
-
-        fileName: file_name || "Unknown",
-
-        mimeType: file_type || "Unknown", // Use mimeType to check file type
-
-        fileUrl: file_url, // Add file URL to the state
-
-      });
-
-
-
-      setShowOverlay(true); // Show overlay after fetching file details
-
+  
+      console.log("defaultttttttttttttt", fileId);
+  
+      if (folderId === 1) {
+        console.log("defaultttttttttttttttttttt", fileId);
+        const response = await axios.get(
+          `http://localhost:3000/api/default/view-file/${fileId}`
+        );
+      
+        if (response.status !== 200) {
+          throw new Error(`Failed to fetch file, status code: ${response.status}`);
+        }
+      
+        const { file_name, aws_file_link, mime_type } = response.data.file;
+      
+        if (!aws_file_link) {
+          throw new Error("File URL is missing from the response.");
+        }
+      
+        setFileData({
+          fileName: file_name || "Unknown",
+          mimeType: mime_type || "Unknown",
+          fileUrl: aws_file_link,
+        });
+      
+        setShowOverlay(true);
+      } else {
+        const response = await axios.post(
+          "http://localhost:3000/api/view-file-content",
+          { fileId: fileId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      
+        console.log("xknwjxbexnbc", response);
+  
+        const { file_name, file_url, file_type } = response.data;
+      
+        if (!file_url) {
+          throw new Error("File URL is missing from the response.");
+        }
+  
+        setFileData({
+          fileName: file_name || "Unknown",
+          mimeType: file_type || "Unknown",
+          fileUrl: file_url,
+        });
+  
+        setShowOverlay(true); // Show overlay after fetching file details
+      }
     } catch (err) {
-
       console.error("Error fetching file content:", err);
-
       setError(
-
-        err.response?.data?.message ||
-
-        "An unexpected error occurred while fetching the file content."
-
+        err.response?.data?.message || "An unexpected error occurred while fetching the file content."
       );
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
+  
 
 
 
@@ -1450,7 +1489,13 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
           className="bg-blue-500 w-52 rounded-2xl my-2 p-3"
 
-          onClick={handleUploadClick}
+          onClick={() => {
+            if (isMembershipActive) {
+              handleUploadClick();
+            } else {
+              setDeletebutton1(true);
+            }
+          }}     
 
         >
 
@@ -1656,7 +1701,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
                                     className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
 
-                                    onClick={() => handleEditFile(file)}
+                                    // onClick={() => handleEditFile(file)}
 
                                   >
 
@@ -1685,6 +1730,17 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
                                     <Trash2 className="h-4" />
 
                                   </button>
+                                  <button
+
+className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+onClick={() => handleDownloadFile(file._id)}
+
+>
+
+<Download className="h-4" />
+
+</button>
 
                                 </>
 
@@ -1710,17 +1766,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
 
-                              <button
 
-                                className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                onClick={() => handleDownloadFile(file._id)}
-
-                              >
-
-                                <Download className="h-4" />
-
-                              </button>
 
                             </div>
 
@@ -2807,7 +2853,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
               <button
 
-                onClick={addUser}
+                // onClick={addUser}     setShowDesignerPopup(true);
 
                 className="mt-4 w-full p-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600"
 
@@ -3026,8 +3072,105 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
         </div>
 
       )}
+                  {deletebutton1 && (
+          <div
+          className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
 
+            role="dialog"
+            aria-labelledby="deleteModalLabel"
+            aria-describedby="deleteModalDescription"
+          >
+            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+              <div className="flex justify-between items-center mb-4">
+                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+                You have no active membership
+                </h2>
+              </div>
 
+              <div
+                id="deleteModalDescription"
+                className="text-sm text-gray-600 mb-4"
+              >
+                Take a membership to access this feature.
+              </div>
+
+              <div className="flex justify-end gap-2 my-2">
+                <button
+                  onClick={() => setDeletebutton1(false)}
+                  className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Cancel
+                </button>
+ <NavLink
+          to="/Subscription">
+                <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 onClick={() => setDeletebutton1(false)}>
+                  Take Membership
+                </button>
+                </NavLink>
+              </div>
+            </div>
+          </div>
+        )}
+
+{showDesignerPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="text-lg font-semibold">Add Designee</h3>
+                <button
+                  onClick={() => setShowDesignerPopup(false)}
+                  className="text-gray-500"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="mt-4">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-24 h-24 rounded-full border-dashed border-2 flex items-center justify-center text-gray-500">
+                    <Camera className="h-6 w-6" />
+                  </div>
+                </div>
+                <label className="block mb-2 text-sm font-medium">
+                  Enter Designee Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Designee Name"
+                  value={designeeName}
+                  onChange={(e) => setDesigneeName(e.target.value)}
+                  className="border p-2 rounded w-full mb-3"
+                />
+                <label className="block mb-2 text-sm font-medium">
+                  Enter Designee Phone Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="Designee Phone Number"
+                  value={designeePhone}
+                  onChange={(e) => setDesigneePhone(e.target.value)}
+                  className="border p-2 rounded w-full mb-3"
+                />
+                <label className="block mb-2 text-sm font-medium">
+                  Enter Designee Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="Designee Email"
+                  value={designeeEmail}
+                  onChange={(e) => setDesigneeEmail(e.target.value)}
+                  className="border p-2 rounded w-full mb-4"
+                />
+              </div>
+              <button
+                onClick={handleAddDesignee}
+                className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+              >
+                Invite to Cumulus
+              </button>
+            </div>
+          </div>
+        )}
 
       {loading && <p>Loading...</p>}
 

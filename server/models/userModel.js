@@ -40,6 +40,14 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   questions: { type: Boolean, default: false }, // Dynamically updated to reflect whether answers exist in `UserQuestion`
+  
+  memberships: [
+    {
+      subscription_id: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" },
+    },
+  ],
+  
+  activeMembership: { type: Boolean, default: false }
 });
 
 const Userlogin = mongoose.model("User", UserSchema);

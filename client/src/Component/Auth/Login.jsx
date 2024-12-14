@@ -28,17 +28,16 @@ const Login = ({ name = "Daniel" }) => {
     const [isCheckboxChecked, setCheckboxChecked] = useState(false);
     const [outerCheckboxChecked, setOuterCheckboxChecked] = useState(false);
     const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [user, setUser] = useState(null);
     const [questions, setQuestions] = useState([]);
     const recaptchaContainer = React.useRef(null);
     const [userData, setUserData] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [selectedQuestions, setSelectedQuestions] = useState(Array(4).fill(""));
     const [answers, setAnswers] = useState(Array(4).fill(""));
     const [confirmationResult, setConfirmationResult] = useState(null);
     const [isOtpSent, setIsOtpSent] = useState(false);
+    const [username, setUsername] = useState(null);
     const [isOtpVerified, setIsOtpVerified] = useState(false);
     const [token, setToken] = useState("");
    
@@ -105,19 +104,20 @@ const Login = ({ name = "Daniel" }) => {
     
 
     const handleSendOTP = async () => {
-
+        setIsOtpSent(true);
         try {
-            showLoading();
+            // showLoading();
             const response = await axios.post('http://localhost:3000/api/auth/send-otp', { email });
             if (response.data.success) {
+             
                 setMessage("OTP sent successfully! Please check your email.");
                 setIsOtpSent(true); // This will trigger the OTP input field to appear.
-             
+                hideLoading();
 
 
             } else {
                 setMessage(response.data.message);
-                setIsOtpSent(true);
+           
             }
         } catch (error) {
             setMessage("An error occurred while sending OTP.");
@@ -147,6 +147,10 @@ const Login = ({ name = "Daniel" }) => {
                 console.log("OTP verified and token stored successfully!");
                 localStorage.setItem("token", token);
                 localStorage.setItem("userId", user);
+                localStorage.setItem("user", userData);
+                localStorage.setItem("email", username);
+
+                
                 setError(""); // Clear error message
                 navigate("/folder/1"); // Redirect to Dashboard
             } else {
@@ -215,6 +219,7 @@ const Login = ({ name = "Daniel" }) => {
             console.log('Response status:', response.status);
     
             if (response.status === 400) {
+               
                 const errorData = await response.json();
                 console.log("Error Response Data:", errorData);
                 setError(errorData.message || "Incorrect email or password.");
@@ -226,12 +231,25 @@ const Login = ({ name = "Daniel" }) => {
             console.log("Complete Response Data:", JSON.stringify(data, null, 2));
     
             // Set token and userId
-            setToken(data.accessToken);
-            setUser(data.user.user_id);
-    
+
+
+
+//for otp working
+            // setToken(data.accessToken);
+            // setUser(data.user.user_id);
+            // setUserData(data.user.username);
+            // setUsername(data.user.email);
+
+
+
+
+
+
             // Store in localStorage
-            // localStorage.setItem("token", data.accessToken);
-            // localStorage.setItem("userId", data.user.user_id);
+            localStorage.setItem("token", data.accessToken);
+            localStorage.setItem("token", data.accessToken);
+            localStorage.setItem("user", data.user.username);
+            localStorage.setItem("email", data.user.email);
     
             if (!data.user.questions) { 
                 setDialogOpen2(true);
@@ -240,12 +258,16 @@ const Login = ({ name = "Daniel" }) => {
                 setDialogOpen2(true);
             } else {
                 // navigate("/folder/1"); // Redirect to Dashboard
-                handleSendOTP();
+
+                // handleSendOTP();   this is modication
+                 navigate("/folder/1"); // Redirect to Dashboard
             }
         } catch (error) {
+            hideLoading();
             console.error("Login error:", error);
             setError("There was an error during login. Please try again.");
-        } finally {
+        }
+        finally{
             hideLoading();
         }
     };
@@ -380,6 +402,7 @@ const Login = ({ name = "Daniel" }) => {
                     setMessage("This phone number is already registered with another account.");
                 } else {
                     setMessage(errorData.message || "Failed to update phone number.");
+
                 }
             }
         } catch (error) {
@@ -419,18 +442,22 @@ const Login = ({ name = "Daniel" }) => {
     };
  
     const verifyOTP = async () => {
+        showLoading();
         if (!confirmationResult) {
             setMessage('No OTP request found.');
+            hideLoading();
             return;
         }
     
         try {
             await confirmationResult.confirm(otp); // Confirm OTP
             setMessage('Phone number verified successfully!');
+            hideLoading();
             
             // Now proceed to update the phone number in your backend or move to next steps
             await updatePhoneNumber();
         } catch (error) {
+            hideLoading();
             console.log("Verification failed:", error.message);
             setMessage(`Failed to verify OTP: ${error.message}`);
         }

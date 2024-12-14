@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, Menu, LayoutGrid, X, ChevronDown, Users, Edit, Eye, Trash2 } from 'lucide-react';
+import fetchUserData from './fetchUserData';
+import {  NavLink } from "react-router-dom";
 // import VoiceLogo from '../../assets/VoiceLogo.png';
 // import voicepage from '../../assets/voicepage.png';
 
@@ -36,10 +38,46 @@ const Voicememo = () => {
   const [designee, setDesignee] = useState("");
   const [share, setShare] = useState("");
   const [notify, setNotify] = useState(true);
-  const [people, setPeople] = useState([
-    { name: "Hariom Gupta (you)", email: "hg119147@gmail.com", role: "Owner" },
-    { name: "Akash", email: "Akahs@gmail.com", role: "" },
-  ]);
+  const [people, setPeople] = useState([]);
+  const [isMembershipActive, setIsMembershipActive] = useState(false);
+  const [membershipDetail, setMembershipDetail] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null); // For handling errors
+  const [deletebutton1, setDeletebutton1] = useState(false);
+  const [selectedFileId, setSelectedFileId] = useState(null);
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const data = await fetchUserData();
+        if (!data?.user) {
+          throw new Error("Invalid response structure");
+        }
+
+        setUserData(data);
+        console.log("data", data);
+        console.log("data user", data.user);
+        setIsMembershipActive(data.user.activeMembership);
+        setMembershipDetail(data.user.memberships);
+        console.log("details", data.user.membershipDetail);
+        console.log("membership", data.user.isMembershipActive);
+      } catch (err) {
+        setError(err.message || "Failed to fetch user data");
+      }
+    };
+    getUserData();
+  }, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedEmail = localStorage.getItem("email");
+  
+    console.log("krcnjrncirc", storedUser);
+    console.log("krcnjrncirc", storedEmail);
+  
+    setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
+    setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
+  }, []);
   const handleToggleRecording = () => {
     if (!isRecording && !isStopped) {
       // Start recording
@@ -253,14 +291,48 @@ const Voicememo = () => {
     fetchAudioFiles();
   }, []);
 
-  const deleteFile = async (file_id) => {
+  const deleteFile = async (folderId) => {
     const token = localStorage.getItem("token");
-    // const selectedFolder = folderId; // Ensure folderId is set correctly
-
-    // Debugging logs
-
-
+    const selectedvoice = folderId;
+  
+    console.log("Token:", token);
+    console.log("File ID to delete:", selectedvoice);
+  
+    if (!token) {
+      setMessage("No token found. Please log in.");
+      console.error("Missing token");
+      return;
+    }
+  
+    if (!selectedvoice) {
+      setMessage("No file selected to delete.");
+      console.error("Missing selectedvoice");
+      return;
+    }
+  
+    try {
+      // Send the voice_id in the JSON body
+      const response = await axios.delete('http://localhost:3000/api/voice-memo/delete-voice', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json', // JSON content type
+        },
+        data: {
+          voice_id: selectedvoice, // Add the voice_id in the body
+        },
+      });
+  
+      setMessage(response.data.message || "File deleted successfully.");
+      fetchAudioFiles();
+      setDeletebutton(false);
+    } catch (error) {
+      console.error("Error response:", error.response || error);
+      setMessage(error.response?.data?.message || "Error deleting file.");
+    }
   };
+  
+  
+  
 
   // Helper function to calculate the duration of the audio (returns a number)
   // async function calculateAudioDuration(audioBlob) {
@@ -329,13 +401,42 @@ const Voicememo = () => {
       return newExpandedRow;
     });
   };
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const data = await fetchUserData();
+        if (!data?.user) {
+          throw new Error("Invalid response structure");
+        }
+
+        setUserData(data);
+        console.log("data", data);
+        console.log("data user", data.user);
+        setIsMembershipActive(data.user.activeMembership);
+        setMembershipDetail(data.user.memberships);
+        console.log("details", data.user.membershipDetail);
+        console.log("membership", data.user.isMembershipActive);
+      } catch (err) {
+        setError(err.message || "Failed to fetch user data");
+      }
+    };
+    getUserData();
+  }, []);
   return (
     <div className="mt-2 p-2 sm:p-4 min-h-screen bg-white">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold">Your Voice Memo</h1>
         <div
           className="bg-blue-500 w-52 rounded-2xl my-2 p-1 cursor-pointer space-y-3"
-          onClick={() => setShowPopup(true)}
+       
+
+          onClick={() => {
+            if (isMembershipActive) {
+              setShowPopup(true);
+            } else {
+              setDeletebutton1(true);
+            }
+          }}
         >
           <button className="flex items-center  text-white px-2 py-2">
             {/* <img src={VoiceLogo} alt="" className="h-12 w-12" /> */}
@@ -518,7 +619,7 @@ const Voicememo = () => {
                           onClick={() => {
                             //   setDeletebutton(true);
                             //   console.log("Deleting file with ID:", file._id); // Debugging log
-                            //   setSelectedFileId(file._id); // Set the file ID to the state
+                              setSelectedFileId(file._id); // Set the file ID to the state
                             setDeletebutton(true);
                           }}
                         >
@@ -624,7 +725,7 @@ const Voicememo = () => {
               </button>
               <button
                 onClick={() => {
-                  // deleteFile(selectedFileId);
+                  deleteFile(selectedFileId);
                   setDeletebutton(false);
                 }}
                 className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -709,6 +810,46 @@ const Voicememo = () => {
           </div>
         </div>
       )}
+            {deletebutton1 && (
+          <div
+          className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+
+            role="dialog"
+            aria-labelledby="deleteModalLabel"
+            aria-describedby="deleteModalDescription"
+          >
+            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+              <div className="flex justify-between items-center mb-4">
+                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+                You have no active membership
+                </h2>
+              </div>
+
+              <div
+                id="deleteModalDescription"
+                className="text-sm text-gray-600 mb-4"
+              >
+                Take a membership to access this feature.
+              </div>
+
+              <div className="flex justify-end gap-2 my-2">
+                <button
+                  onClick={() => setDeletebutton1(false)}
+                  className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Cancel
+                </button>
+ <NavLink
+          to="/Subscription">
+                <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 onClick={() => setDeletebutton1(false)}>
+                  Take Membership
+                </button>
+                </NavLink>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 

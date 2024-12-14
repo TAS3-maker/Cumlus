@@ -46,7 +46,7 @@ const Signup = () => {
   const [selectedQuestions, setSelectedQuestions] = useState(Array(4).fill(""));
     const [answers, setAnswers] = useState(Array(4).fill(""));
     const [isOtpVerified, setIsOtpVerified] = useState(false);
-   
+    const [token, setToken] = useState("");
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
         setIsVerifyButtonVisible(true); // Show verify button when email is filled
@@ -102,6 +102,7 @@ const Signup = () => {
             // Check for 400 status code or specific message indicating email exists
             if (response.status === 400 || responseData?.message === "Email already exists") {
                 setOtpSent(true);
+                hideLoading();
                 handleSendOTP();
                 return;
             }
@@ -112,9 +113,7 @@ const Signup = () => {
             console.error("Login error:", error);
             setError("There was an error. Please try again.");
         }
-        finally {
-            hideLoading();
-        }
+
     };
     
 
@@ -126,6 +125,7 @@ const Signup = () => {
                 otp: otpValue, // Ensure OTP is a string
             });
             if (response.status === 200) {
+                setError(false);
                 // alert('OTP verified successfully!');
                 setIsOtpVerified(true);
             }
@@ -134,7 +134,28 @@ const Signup = () => {
             setError(err.response?.data?.message || 'Error verifying OTP');
         }
     };
+    const otphandle = (e) => {
+        setOtp(e.target.value);
+    };
+ 
+    const verifyOTP = async () => {
+        if (!confirmationResult) {
+            setMessage('No OTP request found.');
+            return;
+        }
     
+        try {
+            await confirmationResult.confirm(otp); // Confirm OTP
+            setMessage('Phone number verified successfully!');
+            
+            // Now proceed to update the phone number in your backend or move to next steps
+            await updatePhoneNumber();
+        } catch (error) {
+            console.log("Verification failed:", error.message);
+            setMessage(`Failed to verify OTP: ${error.message}`);
+        }
+    };
+
 
     const Nextfunc = async () => {
         const userId = user; // Replace with actual user ID logic
@@ -272,14 +293,12 @@ const handleSignUp = async (e) => {
         });
 
         if (loginResponse.ok) {
+            
             setError("Email already exists. Please use a different email or log in.");
             return;
         }
     } catch (loginError) {
         console.log("Email does not exist, proceeding with sign-up...");
-    }
-    finally {
-        hideLoading();
     }
 
     // Step 2: Proceed with sign-up
@@ -310,6 +329,7 @@ const handleSignUp = async (e) => {
         }
 
         const data = await response.json();
+        setToken(data.accessToken);
         setUser(data.user.user_id);
         setError(false);
         // Handle response here (e.g., navigate to a different page or show success message)
@@ -476,7 +496,8 @@ const handlePreviousStep = () => {
 const handleFinalSubmit = () => {
     // Optionally, show a success message or perform some action
     setDialogOpen2(false);
-    
+    localStorage.setItem("token", token);
+    localStorage.setItem("userId", user);
     // Navigate to the desired page
     navigate('/Enterdashboard');  // Replace '/your-new-page' with the path to your new page
 };
@@ -488,29 +509,6 @@ const handlePhoneNumberChange = (e) => {
         setPhoneNumber(value);
     }
 };
-
-const otphandle = (e) => {
-    setOtp(e.target.value);
-};
-
-const verifyOTP = async () => {
-    if (!confirmationResult) {
-        setMessage('No OTP request found.');
-        return;
-    }
-
-    try {
-        await confirmationResult.confirm(otp); // Confirm OTP
-        setMessage('Phone number verified successfully!');
-        
-        // Now proceed to update the phone number in your backend or move to next steps
-        await updatePhoneNumber();
-    } catch (error) {
-        console.log("Verification failed:", error.message);
-        setMessage(`Failed to verify OTP: ${error.message}`);
-    }
-};
-
 const handleOtpSubmit = () => {
     const otpValue = otp.join(""); // Convert the array to a single string
     if (otpValue.length === 6) {
@@ -548,7 +546,7 @@ const handleOtpInputChange = (e, index) => {
     return (
         <div className="flex flex-col md:flex-row h-screen text-white md:justify-center">
             {/* Left Section */}
-         
+            <div id="recaptcha-container"></div>
             <div className="md:w-2/4 w-full flex flex-col justify-center items-center p-3 md:p-6">
                 <div className="bg-white text-black p-6 rounded-lg w-full max-w-md">
                     {/* Logo */}
@@ -988,7 +986,7 @@ const handleOtpInputChange = (e, index) => {
                             </div>
                         )}
 
-                        {currentStep === 3 && (
+{currentStep === 3 && (
                             <div>
                                         {/* <div ref={recaptchaContainer}></div> */}
                                 <h2 className="text-xl font-semibold mb-3 text-black">

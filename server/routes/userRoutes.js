@@ -237,19 +237,36 @@ router.post("/signup", async (req, res) => {
           roleName: defaultRole.roleName,
         },
       ],
-      questions: false, // Initially set to false
     });
 
     // Save the new user
     await newUser.save();
 
+    // Generate the access token
+    const accessToken = jwt.sign({ user_id: newUser._id }, JWT_SECRET, { expiresIn: "5h" });
+
+    // Generate the refresh token
+    const refreshToken = jwt.sign({ user_id: newUser._id }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+    // Send the refresh token as an HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Set secure cookie in production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days expiration
+    });
+
     res.status(201).json({
       message: "User created successfully",
+      accessToken,
       user: {
-        user_id: newUser._id,  // Add user_id in the response
+        user_id: newUser._id,
         username: newUser.username,
         email: newUser.email,
-        questions: newUser.questions,
+        roles: newUser.roles.map((role) => ({
+          role_id: role.role_id,
+          roleName: role.roleName,
+        })),
+        phoneNumber: newUser.phoneNumber || null, // Include if phoneNumber is optional
       },
     });
   } catch (error) {
@@ -257,6 +274,7 @@ router.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Error during signup", error: error.message });
   }
 });
+
 
 
 
@@ -306,6 +324,8 @@ router.post("/login", async (req, res) => {
         questions: !!questionExists,
         phoneNumber: user.phoneNumber,
       },
+      memberships: user.memberships, // Include membership details
+      activeMembership: user.activeMembership // Include active membership status
     });
   } catch (error) {
     console.error("Error during login:", error);
@@ -387,6 +407,53 @@ router.post("/update-phone", async (req, res) => {
   }
 });
 
+router.post("/add-membership", async (req, res) => {
+  try {
+    const { email, subscriptionId, active } = req.body;
+
+    if (!email || !subscriptionId) {
+      return res.status(400).json({ message: "Email and subscriptionId are required." });
+    }
+
+    const user = await Userlogin.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Fetch the subscription details
+    const subscription = await Subscription.findById(subscriptionId);
+    
+    if (!subscription) {
+      return res.status(404).json({ message: "Subscription not found." });
+    }
+
+    // Check if the user already has the membership
+    const membershipIndex = user.memberships.findIndex(membership => membership.subscription_id.toString() === subscriptionId);
+
+    if (membershipIndex > -1) {
+      // Update the existing membership
+      user.memberships[membershipIndex].active = active;
+    } else {
+      // Add new membership
+      user.memberships.push({
+        subscription_id: subscription._id,
+        subscription_name: subscription.subscription_name,
+        cost: subscription.cost,
+        features: subscription.features,
+        active: active,
+      });
+    }
+
+    // Save the user with updated membership
+    await user.save();
+
+    return res.status(200).json({ message: "Membership added/updated successfully.", user });
+  } catch (error) {
+    console.error("Error adding/updating membership:", error);
+    return res.status(500).json({ message: "Error adding/updating membership.", error: error.message });
+  }
+});
 
 
 
@@ -415,15 +482,15 @@ router.post("/update-password", async (req, res) => {
     res.status(500).json({ message: "Error updating password", error: error.message });
   }
 });
-router.get("/get-user", async (req, res) => {
+router.get("/get-user", authenticateToken, async (req, res) => {
   try {
-    const { email } = req.query;
+    const user_id = req.user.user_id; // Extract user ID from the token (adjust field name if necessary)
 
-    if (!email) {
-      return res.status(400).json({ message: "Email is required." });
+    if (!user_id) {
+      return res.status(400).json({ message: "User ID is required." });
     }
 
-    const user = await Userlogin.findOne({ email });
+    const user = await Userlogin.findById(user_id); // Use user ID to find the user
 
     if (user) {
       return res.status(200).json({ user });

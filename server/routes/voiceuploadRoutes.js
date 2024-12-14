@@ -6,6 +6,7 @@ const { encryptvoice, decryptvoice } = require("../utilities/voiceencryptionUtil
 const Voice = require("../models/uservoiceUpload");
 const { authenticateToken } = require("../routes/userRoutes");
 const s3 = require("../config/s3Client");
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 // Set up storage for the uploaded file
 const storage = multer.memoryStorage(); // Store file in memory temporarily
 const upload = multer({
@@ -159,5 +160,48 @@ router.post("/listen-recording", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Error retrieving voice recording.", error: error.message });
   }
 });
+// Delete voice memo API
+router.delete("/delete-voice", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.user_id;  // Extract user_id from the authenticated token
+    const { voice_id } = req.body;     // Get the voice_id from the request body
+    if (!voice_id) {
+      return res.status(400).json({ message: "voice_id is required in the request body." });
+    }
+
+    // Fetch the voice recording by voice_id and user_id to ensure it's the right recording
+    const voiceRecording = await Voice.findOne({ user_id: user_id, _id: voice_id });
+    if (!voiceRecording) {
+      return res.status(404).json({ message: "Voice recording not found or unauthorized access." });
+    }
+
+    // Decrypt the AWS file link to get the file key
+    const awsFileLink = decryptvoice(voiceRecording.aws_file_link, voiceRecording.iv_file_link);
+    if (!awsFileLink) {
+      return res.status(500).json({ message: "Failed to decrypt AWS file link." });
+    }
+
+    // Extract the S3 file key from the decrypted link
+    const fileKey = awsFileLink.split(".amazonaws.com/")[1];  // Get the file key from the URL
+
+    // Delete the voice file from AWS S3
+    const deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileKey,
+    };
+    const deleteCommand = new DeleteObjectCommand(deleteParams);
+    await s3.send(deleteCommand);  // Delete the file from S3
+
+    // Delete the voice recording metadata from the database
+    await Voice.deleteOne({ _id: voice_id });
+
+    // Respond with success message
+    res.status(200).json({ message: "Voice memo deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting voice memo:", error);
+    res.status(500).json({ message: "Error deleting voice memo.", error: error.message });
+  }
+});
+
 
 module.exports = router;

@@ -5,6 +5,8 @@ const multer = require("multer");
 const { S3, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { encryptField, decryptField } = require("../utilities/encryptionUtils"); 
 const DefaultFile = require("../models/defaultfileModel"); 
+const mime = require('mime-types');  // This imports the mime module
+
 require("dotenv").config();
 const s3 = new S3({
     region: process.env.AWS_REGION,
@@ -107,5 +109,46 @@ router.post("/default-file-upload", upload.single("file"), async (req, res) => {
       res.status(500).json({ message: "Error fetching files", error: error.message });
     }
   });
+  // Route to get file details (name, URL, and MIME type)
+  router.get("/view-file/:fileId", async (req, res) => {
+    try {
+      const { fileId } = req.params;
+  
+      // Fetch the file record from the DefaultFile collection using fileId
+      const file = await DefaultFile.findById(fileId);
+  
+      if (!file) {
+        return res.status(404).json({ message: "File not found." });
+      }
+  
+      // Decrypt the file name and AWS file link
+      const decryptedFileName = decryptField(file.file_name, file.iv_file_name);
+      const decryptedFileLink = decryptField(file.aws_file_link, file.iv_file_link);
+  
+      // Get the MIME type based on the file extension
+      const mimeType = mime.lookup(decryptedFileName) || 'application/octet-stream';
+  
+      // Construct the response
+      const fileInfo = {
+        _id: file._id,
+        file_name: decryptedFileName,
+        aws_file_link: decryptedFileLink,
+        mime_type: mimeType,
+        date_of_upload: file.date_of_upload,
+      };
+  
+      // Optionally, you can fetch the file content from AWS if needed
+      // const fileContent = await axios.get(decryptedFileLink, { responseType: 'arraybuffer' });
+  
+      res.status(200).json({
+        message: "File retrieved successfully",
+        file: fileInfo,
+      });
+    } catch (error) {
+      console.error("Error retrieving file:", error);
+      res.status(500).json({ message: "Error retrieving file", error: error.message });
+    }
+  });
+
   
 module.exports = router;
