@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "../utils/Apiconfig";
 const Help = () => {
   const [fileData, setFileData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ const Help = () => {
       setError("");
 
       const response = await axios.post(
-        "http://localhost:3000/api/view-file-content",
+        `${API_URL}/api/view-file-content`,
         { fileId: "6756efaa5464a6a5b3f6a56d" },
         {
           headers: {

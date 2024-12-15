@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import fetchUserData from "./fetchUserData";
+import { API_URL } from "../utils/Apiconfig";
 import {
 
   ArrowRight,
@@ -283,7 +284,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const response = await axios.post(
 
-        'http://localhost:3000/api/download-file', // Backend endpoint
+      `'${API_URL}/api/download-file`, // Backend endpoint
 
         { file_id },
 
@@ -463,7 +464,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const response = await axios.get(
 
-        "http://localhost:3000/api/get-folders",
+        `${API_URL}/api/get-folders`,
 
         {
 
@@ -591,7 +592,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
         const response = await axios.get(
 
-          "http://localhost:3000/api/get-all-files",
+          `${API_URL}/api/get-all-files`,
 
           {
 
@@ -619,7 +620,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
         const response = await axios.get(
 
-          "http://localhost:3000/api/default/default-files"
+          `${API_URL}/api/default/default-files`
 
         );
 
@@ -641,7 +642,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
         const response = await axios.post(
 
-          "http://localhost:3000/api/get-files",
+          `${API_URL}/api/get-files`,
 
           { folder_id: folderId },
 
@@ -907,7 +908,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const response = await axios.post(
 
-        "http://localhost:3000/api/upload-file",
+        `${API_URL}/api/upload-file`,
 
         formData,
 
@@ -1095,7 +1096,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const response = await axios.post(
 
-        "http://localhost:3000/api/delete-file",
+        `${API_URL}/api/delete-file`,
 
         { folder_id: selectedFolder, file_id },
 
@@ -1141,7 +1142,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
       if (folderId === 1) {
         console.log("defaultttttttttttttttttttt", fileId);
         const response = await axios.get(
-          `http://localhost:3000/api/default/view-file/${fileId}`
+          `${API_URL}/api/default/view-file/${fileId}`
         );
       
         if (response.status !== 200) {
@@ -1163,7 +1164,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
         setShowOverlay(true);
       } else {
         const response = await axios.post(
-          "http://localhost:3000/api/view-file-content",
+          "${API_URL}/api/view-file-content",
           { fileId: fileId },
           {
             headers: {

@@ -2,6 +2,7 @@ import React, { useState, useEffect ,useRef } from "react";
 import {
     Loader2
       } from "lucide-react";
+      import { API_URL } from "../utils/Apiconfig";
 import logo from "../../assets/logo.png";
 import rightsignup from "../../assets/signup-right.png";
 import { X } from "lucide-react";
@@ -53,7 +54,7 @@ const Signup = () => {
     };
     const handleSendOTP = async () => {
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/send-otp', { email });
+            const response = await axios.post(`${API_URL}/api/auth/send-otp`, { email });
             if (response.data.success) {
                 setMessage("OTP sent successfully! Please check your email.");
                 // handleVerifyOtp();
@@ -88,7 +89,7 @@ const Signup = () => {
     
         try {
             showLoading();
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginRequestBody),
@@ -120,7 +121,7 @@ const Signup = () => {
     const handleVerifyOtp = async (otpValue) => {
         try {
             console.log("Sending OTP:", otpValue, "Email:", email);
-            const response = await axios.post('http://localhost:3000/api/auth/confirm-otp', {
+            const response = await axios.post(`${API_URL}/api/auth/confirm-otp`, {
                 email,
                 otp: otpValue, // Ensure OTP is a string
             });
@@ -167,7 +168,7 @@ const Signup = () => {
         }));
     
         try {
-            const response = await axios.post("http://localhost:3000/api/auth/set-questions", {
+            const response = await axios.post(`${API_URL}/api/auth/set-questions`, {
                 userId,
                 securityAnswers,
             });
@@ -215,7 +216,7 @@ const handleFormSubmit = (e) => {
 useEffect(() => {
     const fetchQuestions = async () => {
         try {
-            const response = await axios.get("http://localhost:3000/api/auth/security-questions");
+            const response = await axios.get(`${API_URL}/api/auth/security-questions`);
             console.log(response.data); // Debugging log
             setQuestions(response.data.questions); // Access questions property
             // Initialize state for selectedQuestions and answers based on fetched questions
@@ -284,7 +285,7 @@ const handleSignUp = async (e) => {
     // Step 1: Check if email already exists
     try {
         showLoading();
-        const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+        const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -314,7 +315,7 @@ const handleSignUp = async (e) => {
         // Call your API to sign up the user
         console.log("Request Body:", requestBody);
 
-        const response = await fetch('http://localhost:3000/api/auth/signup', {
+        const response = await fetch(`${API_URL}/api/auth/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -353,7 +354,7 @@ const checkPhoneNumber = async (phoneNumber) => {
     console.log("Checking phone number:", phoneNumber);
 
     try {
-        const response = await fetch('http://localhost:3000/api/auth/check-phone', {
+        const response = await fetch(`${API_URL}/api/auth/check-phone`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -458,7 +459,7 @@ const updatePhoneNumber = async () => {
     console.log("Login Payload:", phone);
 
     try {
-        const response = await fetch('http://localhost:3000/api/auth/update-phone', {
+        const response = await fetch(`${API_URL}/api/auth/update-phone`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(phone),

@@ -3,7 +3,7 @@ import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, 
 import logo from "../../assets/logo.png";
 import axios from "axios";
 import { Link, Navigate, NavLink, useLocation } from "react-router-dom";
-
+import { API_URL } from "../utils/Apiconfig";
 const MobileSidebar = ({ onFolderSelect }) => {
     const [folders, setFolders] = useState([]);
     const location = useLocation(); // Access current URL for routing
@@ -48,7 +48,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
                 throw new Error("No token found. Please log in again.");
             }
 
-            const response = await axios.get("http://localhost:3000/api/get-folders", {
+            const response = await axios.get(`${API_URL}/api/get-folders`, {
                 headers: {
                     Authorization: `Bearer ${token}`, // Include token in Authorization header
                 },
@@ -93,7 +93,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
                 }
 
                 const response = await axios.post(
-                    "http://localhost:3000/api/create-folder",
+                    `${API_URL}/api/create-folder`,
                     { folder_name: newFolder },
                     {
                         headers: {

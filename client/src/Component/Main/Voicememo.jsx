@@ -4,7 +4,7 @@ import fetchUserData from './fetchUserData';
 import {  NavLink } from "react-router-dom";
 // import VoiceLogo from '../../assets/VoiceLogo.png';
 // import voicepage from '../../assets/voicepage.png';
-
+import { API_URL } from '../utils/Apiconfig';
 import axios from 'axios'; // For API integration
 const Voicememo = () => {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
@@ -172,7 +172,7 @@ const Voicememo = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/api/voice-memo/get-recordings', {
+      const response = await axios.get(`${API_URL}/api/voice-memo/get-recordings`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -196,7 +196,7 @@ const Voicememo = () => {
   const handlePlay = async (file) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/voice-memo/listen-recording",
+        `${API_URL}/api/voice-memo/listen-recording`,
         { voice_id: file._id },
         {
           headers: {
@@ -252,7 +252,7 @@ const Voicememo = () => {
       formData.append('duration', finalDuration);
 
       const response = await axios.post(
-        'http://localhost:3000/api/voice-memo/upload-voice',
+        `${API_URL}/api/voice-memo/upload-voice`,
         formData,
         {
           headers: {
@@ -312,7 +312,7 @@ const Voicememo = () => {
   
     try {
       // Send the voice_id in the JSON body
-      const response = await axios.delete('http://localhost:3000/api/voice-memo/delete-voice', {
+      const response = await axios.delete(`${API_URL}/api/voice-memo/delete-voice`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json', // JSON content type

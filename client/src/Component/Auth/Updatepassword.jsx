@@ -7,7 +7,7 @@ import rightsignup from "../../assets/signup-right.png";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import useLoadingStore from "../../store/UseLoadingStore";
-
+import { API_URL } from "../utils/Apiconfig";
 const Updatepassword = () => {
     const navigate = useNavigate();
     const { isLoading, showLoading, hideLoading } = useLoadingStore();
@@ -46,7 +46,7 @@ const Updatepassword = () => {
 
         try {
             showLoading();
-            const response = await axios.post('http://localhost:3000/api/auth/send-otp', { email });
+            const response = await axios.post(`${API_URL}/api/auth/send-otp`, { email });
             if (response.data.success) {
                 setMessage("OTP sent successfully! Please check your email.");
                 setIsOtpSent(true); // This will trigger the OTP input field to appear.
@@ -74,7 +74,7 @@ const Updatepassword = () => {
     
         try {
             console.log("Sending OTP:", otp, "Email:", email);
-            const response = await axios.post('http://localhost:3000/api/auth/confirm-otp', {
+            const response = await axios.post(`${API_URL}/api/auth/confirm-otp`, {
                 email,
                 otp,
             });
@@ -114,7 +114,7 @@ const Updatepassword = () => {
         console.log("Login Payload:", loginRequestBody);
     
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginRequestBody),
@@ -148,7 +148,7 @@ const Updatepassword = () => {
         console.log("New Password:", newPassword);
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/update-password', {
+            const response = await fetch(`${API_URL}/api/auth/update-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),

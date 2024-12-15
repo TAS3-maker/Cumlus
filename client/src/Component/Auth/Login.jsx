@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useLoadingStore from "../../store/UseLoadingStore";
 import axios from "axios";
+import { API_URL } from "../utils/Apiconfig";
 const Login = ({ name = "Daniel" }) => {
     const { isLoading, showLoading, hideLoading } = useLoadingStore();
     const navigate = useNavigate();
@@ -51,7 +52,7 @@ const Login = ({ name = "Daniel" }) => {
             }));
         
             try {
-                const response = await axios.post("http://localhost:3000/api/auth/set-questions", {
+                const response = await axios.post(`${API_URL}/api/auth/set-questions`, {
                     userId,
                     securityAnswers,
                 });
@@ -87,7 +88,7 @@ const Login = ({ name = "Daniel" }) => {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await axios.get("http://localhost:3000/api/auth/security-questions");
+                const response = await axios.get(`${API_URL}/api/auth/security-questions`);
                 console.log(response.data); // Debugging log
                 setQuestions(response.data.questions); // Access questions property
                 // Initialize state for selectedQuestions and answers based on fetched questions
@@ -107,7 +108,7 @@ const Login = ({ name = "Daniel" }) => {
         setIsOtpSent(true);
         try {
             // showLoading();
-            const response = await axios.post('http://localhost:3000/api/auth/send-otp', { email });
+            const response = await axios.post(`${API_URL}/api/auth/send-otp`, { email });
             if (response.data.success) {
              
                 setMessage("OTP sent successfully! Please check your email.");
@@ -137,7 +138,7 @@ const Login = ({ name = "Daniel" }) => {
             console.log("Sending OTP:", otp, "Email:", email);
     
             // Send OTP verification request
-            const response = await axios.post('http://localhost:3000/api/auth/confirm-otp', {
+            const response = await axios.post(`${API_URL}/api/auth/confirm-otp`, {
                 email,
                 otp,
             });
@@ -210,7 +211,7 @@ const Login = ({ name = "Daniel" }) => {
     
         try {
             showLoading();
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginRequestBody),
@@ -279,7 +280,7 @@ const Login = ({ name = "Daniel" }) => {
         console.log("Checking phone number:", phoneNumber);
     
         try {
-            const response = await fetch('http://localhost:3000/api/auth/check-phone', {
+            const response = await fetch(`${API_URL}/api/auth/check-phone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -384,7 +385,7 @@ const Login = ({ name = "Daniel" }) => {
         console.log("Login Payload:", phone);
     
         try {
-            const response = await fetch('http://localhost:3000/api/auth/update-phone', {
+            const response = await fetch(`${API_URL}/api/auth/update-phone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(phone),

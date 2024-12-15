@@ -18,7 +18,7 @@ import logo from "../../assets/logo.png";
 import axios from "axios";
 import { Link, Navigate, NavLink, useLocation } from "react-router-dom";
 import fetchUserData from "./fetchUserData";
-
+import { API_URL } from "../utils/Apiconfig";
 const Sidebar = ({ onFolderSelect }) => {
   const [deletebutton, setDeletebutton] = useState(false);
   const [folders, setFolders] = useState([]);
@@ -96,7 +96,7 @@ const Sidebar = ({ onFolderSelect }) => {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/get-folders",
+        `${API_URL}/api/get-folders`,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Include token in Authorization header
@@ -139,7 +139,7 @@ const Sidebar = ({ onFolderSelect }) => {
   
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/delete-folder",
+        `${API_URL}/api/delete-folder`,
         { folder_id: selectedFolder },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -204,7 +204,7 @@ const Sidebar = ({ onFolderSelect }) => {
         }
 
         const response = await axios.post(
-          "http://localhost:3000/api/create-folder",
+          `${API_URL}/api/create-folder`,
           { folder_name: newFolder },
           {
             headers: {
@@ -551,7 +551,8 @@ const Sidebar = ({ onFolderSelect }) => {
                 />
               </div>
               <button
-                onClick={handleAddDesignee}
+                // onClick={handleAddDesignee}
+                onClick={() => setShowDesignerPopup(false)}
                 className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
               >
                 Invite to Cumulus
