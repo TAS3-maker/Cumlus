@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, Menu, LayoutGrid, X, ChevronDown, Users, Edit, Eye, Trash2 } from 'lucide-react';
 import fetchUserData from './fetchUserData';
-import {  NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 // import VoiceLogo from '../../assets/VoiceLogo.png';
 // import voicepage from '../../assets/voicepage.png';
 import { API_URL } from '../utils/Apiconfig';
@@ -71,10 +71,10 @@ const Voicememo = () => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedEmail = localStorage.getItem("email");
-  
+
     console.log("krcnjrncirc", storedUser);
     console.log("krcnjrncirc", storedEmail);
-  
+
     setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
     setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
   }, []);
@@ -204,21 +204,21 @@ const Voicememo = () => {
           },
         }
       );
-  
+
       const { audio_url, voice_name } = response.data;
-  
+
       if (!audio_url) {
         console.error("Audio URL is missing");
         return;
       }
-  
+
       // Set the current audio for the popup without playing it
       setCurrentAudio({ url: audio_url, name: voice_name });
     } catch (err) {
       console.error("Error fetching audio:", err);
     }
   };
-  
+
 
 
 
@@ -277,7 +277,7 @@ const Voicememo = () => {
         fetchAudioFiles(); // Fetch updated list after saving
         // setDuration(); // Reset timer
         setIsRecording(false);
-        
+
       } else {
         console.error`(Unexpected response: ${response.status})`;
       }
@@ -294,22 +294,22 @@ const Voicememo = () => {
   const deleteFile = async (folderId) => {
     const token = localStorage.getItem("token");
     const selectedvoice = folderId;
-  
+
     console.log("Token:", token);
     console.log("File ID to delete:", selectedvoice);
-  
+
     if (!token) {
       setMessage("No token found. Please log in.");
       console.error("Missing token");
       return;
     }
-  
+
     if (!selectedvoice) {
       setMessage("No file selected to delete.");
       console.error("Missing selectedvoice");
       return;
     }
-  
+
     try {
       // Send the voice_id in the JSON body
       const response = await axios.delete(`${API_URL}/api/voice-memo/delete-voice`, {
@@ -321,7 +321,7 @@ const Voicememo = () => {
           voice_id: selectedvoice, // Add the voice_id in the body
         },
       });
-  
+
       setMessage(response.data.message || "File deleted successfully.");
       fetchAudioFiles();
       setDeletebutton(false);
@@ -330,9 +330,9 @@ const Voicememo = () => {
       setMessage(error.response?.data?.message || "Error deleting file.");
     }
   };
-  
-  
-  
+
+
+
 
   // Helper function to calculate the duration of the audio (returns a number)
   // async function calculateAudioDuration(audioBlob) {
@@ -424,11 +424,11 @@ const Voicememo = () => {
   }, []);
   return (
     <div className="mt-2 p-2 sm:p-4 min-h-screen bg-white">
-      <div className="flex flex-col">
+      <div className="flex flex-col ">
         <h1 className="text-2xl font-bold">Your Voice Memo</h1>
         <div
-          className="bg-blue-500 w-52 rounded-2xl my-2 p-1 cursor-pointer space-y-3"
-       
+          className="bg-blue-500 w-52 rounded-2xl my-2 p-3 cursor-pointer space-y-0 sm:space-y-3"
+
 
           onClick={() => {
             if (isMembershipActive) {
@@ -438,7 +438,7 @@ const Voicememo = () => {
             }
           }}
         >
-          <button className="flex items-center  text-white px-2 py-2">
+          <button className="flex items-center  text-white px-2 py-1">
             {/* <img src={VoiceLogo} alt="" className="h-12 w-12" /> */}
             <p className="text-lg">Record Now</p>
           </button>
@@ -542,13 +542,13 @@ const Voicememo = () => {
       {viewMode === 'list' ? (
         <table className="w-full mt-4 text-left border-collapse shadow">
           <thead>
-            <tr className="border bg-gray-100 text-left text-[0.6rem]  md:text-lg shadow-sm ">
-              <th className="p-2">Voice Name</th>
-              <th className="p-2">Duration</th>
+            <tr className="border bg-gray-100 text-left text-[0.6rem]  md:text-lg shadow-sm  ">
+              <th className="p-2 font-normal">Voice Name</th>
+              <th className="p-2 font-normal">Duration</th>
 
-              <th className="p-2">Date Uploaded</th>
-              <th className="p-2">File Size</th>
-              <th className="p-2"></th>
+              <th className="p-2 font-normal">Date Uploaded</th>
+              <th className="p-2 font-normal">File Size</th>
+              <th className="p-2 font-normal"></th>
             </tr>
           </thead>
           <tbody>
@@ -619,7 +619,7 @@ const Voicememo = () => {
                           onClick={() => {
                             //   setDeletebutton(true);
                             //   console.log("Deleting file with ID:", file._id); // Debugging log
-                              setSelectedFileId(file._id); // Set the file ID to the state
+                            setSelectedFileId(file._id); // Set the file ID to the state
                             setDeletebutton(true);
                           }}
                         >
@@ -640,10 +640,10 @@ const Voicememo = () => {
               key={index}
               className="border p-2 sm:p-4  rounded-md shadow-md flex flex-col justify-between bg-gray-50"
             >
-              <h3 className="font-bold ">{file.voice_name}</h3> {/* Updated property */}
-              <p className="font-bold  text-sm text-gray-600 mt-1">Time: {file.duration} {file.duration !== 1 ? 'sec' : 'sec'}</p>
-              <p className="font-bold text-sm text-gray-600  mt-1">
-                Uploaded: {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
+              <h3 className="font-bold text-xl ">{file.voice_name}</h3> {/* Updated property */}
+             <span className='font-bold flex gap-1 items-center'> Time: <p className=" text-sm text-gray-700"> {file.duration} {file.duration !== 1 ? 'sec' : 'sec'}</p> </span> 
+              <span className='font-bold  gap-1 flex'>  Uploaded:  <p className=" text-sm text-gray-700  mt-1 ">
+                {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
                   ? new Date(file.date_of_upload).toLocaleString('en-US', {
                     weekday: 'short',
                     year: 'numeric',
@@ -655,8 +655,8 @@ const Voicememo = () => {
                     hour12: true, // for 24-hour format
                   })
                   : "Invalid Date"}
-              </p>
-
+              </p> </span>
+         <span className='font-bold flex gap-1 items-center'>Size: <p className='text-gray-700 text-sm'>{file.file_size}</p> </span>
               <button
                 onClick={() => handlePlay(file)}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
@@ -668,30 +668,30 @@ const Voicememo = () => {
         </div>
       )}
 
-{currentAudio && (
-  <div className="absolute top-1/2 md:top-2/3 right-1/2 md:right-[25%] transform translate-x-1/2 -translate-y-1/2 bg-white p-6 shadow-lg rounded-lg w-80">
-    <h2 className="text-lg font-bold mb-4 text-black">{currentAudio.name}</h2>
+      {currentAudio && (
+        <div className="absolute top-1/2 md:top-2/3 right-1/2 md:right-[25%] transform translate-x-1/2 -translate-y-1/2 bg-white p-6 shadow-lg rounded-lg w-80">
+          <h2 className="text-lg font-bold mb-4 text-black">{currentAudio.name}</h2>
 
-    <div className="audio-container items-center justify-center bg-gray-100 rounded-2xl">
-      <audio
-        id="audio-player"
-        src={currentAudio.url}
-        controls
-        className="w-full rounded"
-        controlsList="nodownload" // Disable download option
-      >
-        Your browser does not support the audio element.
-      </audio>
-    </div>
+          <div className="audio-container items-center justify-center bg-gray-100 rounded-2xl">
+            <audio
+              id="audio-player"
+              src={currentAudio.url}
+              controls
+              className="w-full rounded"
+              controlsList="nodownload" // Disable download option
+            >
+              Your browser does not support the audio element.
+            </audio>
+          </div>
 
-    <button
-      onClick={() => setCurrentAudio(null)}
-      className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-md w-full"
-    >
-      Close
-    </button>
-  </div>
-)}
+          <button
+            onClick={() => setCurrentAudio(null)}
+            className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-md w-full"
+          >
+            Close
+          </button>
+        </div>
+      )}
 
 
 
@@ -810,46 +810,46 @@ const Voicememo = () => {
           </div>
         </div>
       )}
-            {deletebutton1 && (
-          <div
+      {deletebutton1 && (
+        <div
           className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
 
-            role="dialog"
-            aria-labelledby="deleteModalLabel"
-            aria-describedby="deleteModalDescription"
-          >
-            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+          role="dialog"
+          aria-labelledby="deleteModalLabel"
+          aria-describedby="deleteModalDescription"
+        >
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 id="deleteModalLabel" className="text-lg font-semibold">
                 You have no active membership
-                </h2>
-              </div>
+              </h2>
+            </div>
 
-              <div
-                id="deleteModalDescription"
-                className="text-sm text-gray-600 mb-4"
+            <div
+              id="deleteModalDescription"
+              className="text-sm text-gray-600 mb-4"
+            >
+              Take a membership to access this feature.
+            </div>
+
+            <div className="flex justify-end gap-2 my-2">
+              <button
+                onClick={() => setDeletebutton1(false)}
+                className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Take a membership to access this feature.
-              </div>
-
-              <div className="flex justify-end gap-2 my-2">
-                <button
-                  onClick={() => setDeletebutton1(false)}
-                  className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Cancel
-                </button>
- <NavLink
-          to="/Subscription">
+                Cancel
+              </button>
+              <NavLink
+                to="/Subscription">
                 <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                 onClick={() => setDeletebutton1(false)}>
+                  onClick={() => setDeletebutton1(false)}>
                   Take Membership
                 </button>
-                </NavLink>
-              </div>
+              </NavLink>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 

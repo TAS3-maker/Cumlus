@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import fetchUserData from "./fetchUserData";
 import { API_URL } from "../utils/Apiconfig";
 import {
@@ -43,7 +44,7 @@ import axios from "axios";
 
 import mammoth from "mammoth";
 
-import { useParams  ,NavLink} from "react-router-dom";
+import { useParams, NavLink } from "react-router-dom";
 
 import useLoadingStore from "../../store/UseLoadingStore";
 
@@ -57,11 +58,16 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
   const [isUploading, setIsUploading] = useState(false);
 
-  const [openMenuId, setOpenMenuId] = useState(
+  const [openMenuId, setOpenMenuId] = useState(() => {
+    try {
+      const storedValue = localStorage.getItem("openMenuId");
+      return storedValue ? JSON.parse(storedValue) : null;
+    } catch (error) {
+      console.error("Failed to parse openMenuId from localStorage:", error);
+      return null;
+    }
+  });
 
-    () => JSON.parse(localStorage.getItem("openMenuId")) || null
-
-  );
 
   const [files, setFiles] = useState([
 
@@ -211,7 +217,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
         console.log("details", data.user.membershipDetail);
         console.log("membership", data.user.isMembershipActive);
       } catch (err) {
-        setError(err.message || "Failed to fetch user data");
+        console.log(err.message || "Failed to fetch user data");
       }
     };
     getUserData();
@@ -238,15 +244,15 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedEmail = localStorage.getItem("email");
-  
+
     console.log("krcnjrncirc", storedUser);
     console.log("krcnjrncirc", storedEmail);
-  
+
     setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
     setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
   }, []);
-  
-  
+
+
 
 
 
@@ -284,7 +290,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const response = await axios.post(
 
-      `'${API_URL}/api/download-file`, // Backend endpoint
+        `${API_URL}/api/download-file`, // Backend endpoint
 
         { file_id },
 
@@ -556,13 +562,13 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const token = localStorage.getItem("token");
 
-      const userId = localStorage.getItem("userId");
+  
 
 
 
       console.log("tokennnnnnn", token);
 
-      console.log("useerrrrrrrrid", userId);
+      // console.log("useerrrrrrrrid", userId);
 
       console.log("folderrrrrid", folderId);
 
@@ -576,18 +582,22 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
 
-      if (!userId) {
-
-        throw new Error("No userId found. Please log in again.");
-
-      }
+   
 
 
 
       if (folderId === 0) {
+        const userId = localStorage.getItem("userId");
+
+
+        if (!userId) {
+
+          throw new Error("No userId found. Please log in again.");
+  
+        }
 
         console.log("Folder ID is 0, fetching all files for userId:", userId);
-
+        setFiles([]);
 
 
         const response = await axios.get(
@@ -604,7 +614,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
         );
 
-        console.log("API response for userId:", response.data);
+        console.log("API response for all filessssssss:", response.data);
 
         setNeed(false);
 
@@ -613,6 +623,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
       }
 
       else if (folderId === 1) {
+        setFiles([]);
 
         // console.log("Folder ID is 0, fetching all files for userId:", userId);
 
@@ -624,7 +635,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
         );
 
-        console.log("API response for userId:", response.data);
+        console.log("API response for defaultttttttttttt:", response.data);
 
         const filesArray = response.data?.files || []; // Extract the files array
 
@@ -637,7 +648,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
       else {
 
         console.log("Fetching files for folderId:", folderId);
-
+        setFiles([]);
 
 
         const response = await axios.post(
@@ -954,15 +965,15 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
   };
 
-  const toggleEllipses = (file) => {
+  // const toggleEllipses = (file) => {
 
-    const newOpenMenuId = openMenuId === folderId ? null : folderId;
+  //   const newOpenMenuId = openMenuId === folderId ? null : folderId;
 
-    setOpenMenuId(newOpenMenuId);
+  //   setOpenMenuId(newOpenMenuId);
 
-    localStorage.setItem("openMenuId", JSON.stringify(newOpenMenuId));
+  //   localStorage.setItem("openMenuId", JSON.stringify(newOpenMenuId));
 
-  };
+  // };
 
 
 
@@ -987,6 +998,10 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   };
 
 
+  const toggleEllipses = (fileId) => {
+    const newOpenMenuId = openMenuId === fileId ? null : fileId; 
+    setOpenMenuId(newOpenMenuId);
+  };
 
 
   const handleSaveEdit = () => {
@@ -1128,43 +1143,43 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
     try {
       setLoading(true);
       setError("");
-  
+
       const token = localStorage.getItem("token");
       console.log("Retrieved Token:", token);
-  
+
       if (!token) {
         setError("Token is missing. Please log in again.");
         return;
       }
-  
+
       console.log("defaultttttttttttttt", fileId);
-  
+
       if (folderId === 1) {
         console.log("defaultttttttttttttttttttt", fileId);
         const response = await axios.get(
           `${API_URL}/api/default/view-file/${fileId}`
         );
-      
+
         if (response.status !== 200) {
           throw new Error(`Failed to fetch file, status code: ${response.status}`);
         }
-      
+
         const { file_name, aws_file_link, mime_type } = response.data.file;
-      
+
         if (!aws_file_link) {
           throw new Error("File URL is missing from the response.");
         }
-      
+
         setFileData({
           fileName: file_name || "Unknown",
           mimeType: mime_type || "Unknown",
           fileUrl: aws_file_link,
         });
-      
+
         setShowOverlay(true);
       } else {
         const response = await axios.post(
-          "${API_URL}/api/view-file-content",
+          `${API_URL}/api/view-file-content`,
           { fileId: fileId },
           {
             headers: {
@@ -1172,21 +1187,24 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
             },
           }
         );
-      
+        // const toggleEllipses = (fileId) => {
+        //   const newOpenMenuId = openMenuId === fileId ? null : fileId; // Toggle menu
+        //   setOpenMenuId(newOpenMenuId);
+        // };
         console.log("xknwjxbexnbc", response);
-  
+
         const { file_name, file_url, file_type } = response.data;
-      
+
         if (!file_url) {
           throw new Error("File URL is missing from the response.");
         }
-  
+
         setFileData({
           fileName: file_name || "Unknown",
           mimeType: file_type || "Unknown",
           fileUrl: file_url,
         });
-  
+
         setShowOverlay(true); // Show overlay after fetching file details
       }
     } catch (err) {
@@ -1198,7 +1216,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
       setLoading(false);
     }
   };
-  
+
 
 
 
@@ -1474,10 +1492,6 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
     <div className="mt-2 p-4  min-h-screen bg-white">
 
-
-
-
-
       {/* Dashboard Header */}
 
 
@@ -1496,7 +1510,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
             } else {
               setDeletebutton1(true);
             }
-          }}     
+          }}
 
         >
 
@@ -1548,23 +1562,23 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       {viewMode === "list" ? (
 
-        <div className="mt-4 bg-white shadow rounded sm:flex">
+        <div className="mt-4 bg-white shadow-md rounded sm:flex">
 
-          <table className="w-full overflow-scroll">
+          <table className="w-full ">
 
             <thead>
 
-              <tr className="bg-gray-100 text-left text-xs md:text-sm">
+              <tr className="bg-gray-100 text-left text-[0.8rem]  border-black">
 
-                <th className="p-1 md:p-4">File Name</th>
+                <th className="p-2 md:p-4 font-normal md:text-lg">File Name</th>
 
-                <th className="p-1 md:p-4">Folder</th>
+                <th className="p-2 md:p-4 font-normal md:text-lg">Folder</th>
 
-                <th className="p-1 md:p-4">Date Uploaded</th>
+                <th className="p-2 md:p-4 font-normal md:text-lg">Date Uploaded</th>
 
-                <th className="p-1 md:p-4">Contact </th>
+                <th className="p-2 md:p-4 font-normal md:text-lg">Contact </th>
 
-                <th className="p-1 md:p-4">Tags</th>
+                <th className="p-2 md:p-4 font-normal md:text-lg">Tags</th>
 
               </tr>
 
@@ -1590,7 +1604,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
                       {/* Main Row */}
 
-                      <tr className="text-sm">
+                      <tr className="text-xs sm:text-sm">
 
                         <td className="p-0 md:p-4 flex items-center gap-0 md:gap-2">
 
@@ -1602,7 +1616,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
                           >
 
-                            <ChevronDown className={isExpanded ? "rotate-180" : ""} />
+                            <ChevronDown className='{isExpanded ? "rotate-180" : ""} h-4 '/>
 
                           </button>
 
@@ -1610,11 +1624,11 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
                         </td>
 
-                        <td className="p-0 md:p-4">{file.folder_name}</td>
+                        <td className="p-0 md:p-4 ">{file.folder_name}</td>
 
                         <td className="p-0 md:p-4">
 
-                          <p className=" text-sm text-gray-600 mt-1">
+                          <p className=" text-xs sm:text-sm text-gray-600 mt-1">
 
                             {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
 
@@ -1702,7 +1716,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
                                     className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
 
-                                    // onClick={() => handleEditFile(file)}
+                                  // onClick={() => handleEditFile(file)}
 
                                   >
 
@@ -1733,15 +1747,15 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
                                   </button>
                                   <button
 
-className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
 
-onClick={() => handleDownloadFile(file._id)}
+                                    onClick={() => handleDownloadFile(file._id)}
 
->
+                                  >
 
-<Download className="h-4" />
+                                    <Download className="h-4" />
 
-</button>
+                                  </button>
 
                                 </>
 
@@ -1970,74 +1984,103 @@ onClick={() => handleDownloadFile(file._id)}
 
             >
 
-              <div className="flex justify-between"> <h3 className="text-lg font-medium">{file.file_name}</h3>
+              <div className="flex justify-between relative">
+                <h3 className="text-lg font-medium">{file.file_name}</h3>
 
+                {/* Ellipsis Button */}
                 <button
-
                   onClick={(e) => {
-
                     e.preventDefault();
-
-                    toggleEllipses(file); // Handle menu toggle without navigation
-
-
-
+                    e.stopPropagation(); 
+                    toggleEllipses(file.id); 
                   }}
-
                 >
-
                   <EllipsisVertical />
-
                 </button>
 
-                {openMenuId === file && (
-
-                  <div className="absolute top-full right-0 mt-2 w-32 bg-white shadow-lg rounded-lg text-black">
-
+                {/* Dropdown Menu */}
+                {openMenuId === file.id && (
+                  <motion.div
+                    className="absolute top-5  mt-2 w-48 bg-white shadow-lg rounded-lg text-black flex flex-col gap-y-2 p-2 z-50 "
+                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    {/* Share Option */}
                     <button
-
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100"
-
-                      onClick={(e) => {
-
-                        e.stopPropagation();
-
-                        setOpenMenuId(null);
-
-
-
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                      onClick={() => {
+                        setShare(true);
+                        setOpenMenuId(null); // Close menu after selecting
                       }}
-
                     >
+                      <Users className="h-4" />
+                      Share
+                    </button>
 
+                    {/* Access Option */}
+                    <button
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                      onClick={() => {
+                        setAccess(true);
+                        setOpenMenuId(null); // Close menu after selecting
+                      }}
+                    >
+                      <Folder className="h-4" />
+                      Access
+                    </button>
+
+                    {/* Edit Option */}
+                    <button
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                      onClick={() => {
+                        handleEditFile(file);
+                        setOpenMenuId(null); // Close menu after selecting
+                      }}
+                    >
+                      <Edit className="h-4" />
                       Edit
-
                     </button>
 
+                    {/* View Content Option */}
                     <button
-
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 text-black"
-
-                      onClick={(e) => {
-
-                        e.stopPropagation();
-
-                        setOpenMenuId(null);
-
-
-
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                      onClick={() => {
+                        fetchFileContent(file._id);
+                        setOpenMenuId(null); // Close menu after selecting
                       }}
-
                     >
-
-                      Delete
-
+                      <Eye className="h-4" />
+                      View Content
                     </button>
 
-                  </div>
+                    {/* Delete Option */}
+                    <button
+                      className="flex items-center gap-2 text-gray-600 hover:text-red-500"
+                      onClick={() => {
+                        setDeletebutton(true);
+                        setSelectedFileId(file._id); // Set the file ID to the state
+                        setOpenMenuId(null); // Close menu after selecting
+                      }}
+                    >
+                      <Trash2 className="h-4" />
+                      Delete
+                    </button>
 
+                    {/* Download Option */}
+                    <button
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                      onClick={() => {
+                        handleDownloadFile(file._id);
+                        setOpenMenuId(null); // Close menu after selecting
+                      }}
+                    >
+                      <Download className="h-4" />
+                      Download
+                    </button>
+                  </motion.div>
                 )}
-
               </div>
 
               <span className="flex items-center gap-2">
@@ -3073,105 +3116,105 @@ onClick={() => handleDownloadFile(file._id)}
         </div>
 
       )}
-                  {deletebutton1 && (
-          <div
+      {deletebutton1 && (
+        <div
           className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
 
-            role="dialog"
-            aria-labelledby="deleteModalLabel"
-            aria-describedby="deleteModalDescription"
-          >
-            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+          role="dialog"
+          aria-labelledby="deleteModalLabel"
+          aria-describedby="deleteModalDescription"
+        >
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 id="deleteModalLabel" className="text-lg font-semibold">
                 You have no active membership
-                </h2>
-              </div>
+              </h2>
+            </div>
 
-              <div
-                id="deleteModalDescription"
-                className="text-sm text-gray-600 mb-4"
+            <div
+              id="deleteModalDescription"
+              className="text-sm text-gray-600 mb-4"
+            >
+              Take a membership to access this feature.
+            </div>
+
+            <div className="flex justify-end gap-2 my-2">
+              <button
+                onClick={() => setDeletebutton1(false)}
+                className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Take a membership to access this feature.
-              </div>
-
-              <div className="flex justify-end gap-2 my-2">
-                <button
-                  onClick={() => setDeletebutton1(false)}
-                  className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Cancel
-                </button>
- <NavLink
-          to="/Subscription">
+                Cancel
+              </button>
+              <NavLink
+                to="/Subscription">
                 <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                 onClick={() => setDeletebutton1(false)}>
+                  onClick={() => setDeletebutton1(false)}>
                   Take Membership
                 </button>
-                </NavLink>
-              </div>
+              </NavLink>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-{showDesignerPopup && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="text-lg font-semibold">Add Designee</h3>
-                <button
-                  onClick={() => setShowDesignerPopup(false)}
-                  className="text-gray-500"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="mt-4">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="w-24 h-24 rounded-full border-dashed border-2 flex items-center justify-center text-gray-500">
-                    <Camera className="h-6 w-6" />
-                  </div>
-                </div>
-                <label className="block mb-2 text-sm font-medium">
-                  Enter Designee Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Designee Name"
-                  value={designeeName}
-                  onChange={(e) => setDesigneeName(e.target.value)}
-                  className="border p-2 rounded w-full mb-3"
-                />
-                <label className="block mb-2 text-sm font-medium">
-                  Enter Designee Phone Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="Designee Phone Number"
-                  value={designeePhone}
-                  onChange={(e) => setDesigneePhone(e.target.value)}
-                  className="border p-2 rounded w-full mb-3"
-                />
-                <label className="block mb-2 text-sm font-medium">
-                  Enter Designee Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Designee Email"
-                  value={designeeEmail}
-                  onChange={(e) => setDesigneeEmail(e.target.value)}
-                  className="border p-2 rounded w-full mb-4"
-                />
-              </div>
+      {showDesignerPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="text-lg font-semibold">Add Designee</h3>
               <button
-                onClick={handleAddDesignee}
-                className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                onClick={() => setShowDesignerPopup(false)}
+                className="text-gray-500"
               >
-                Invite to Cumulus
+                ✕
               </button>
             </div>
+            <div className="mt-4">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-24 h-24 rounded-full border-dashed border-2 flex items-center justify-center text-gray-500">
+                  <Camera className="h-6 w-6" />
+                </div>
+              </div>
+              <label className="block mb-2 text-sm font-medium">
+                Enter Designee Name
+              </label>
+              <input
+                type="text"
+                placeholder="Designee Name"
+                value={designeeName}
+                onChange={(e) => setDesigneeName(e.target.value)}
+                className="border p-2 rounded w-full mb-3"
+              />
+              <label className="block mb-2 text-sm font-medium">
+                Enter Designee Phone Number
+              </label>
+              <input
+                type="text"
+                placeholder="Designee Phone Number"
+                value={designeePhone}
+                onChange={(e) => setDesigneePhone(e.target.value)}
+                className="border p-2 rounded w-full mb-3"
+              />
+              <label className="block mb-2 text-sm font-medium">
+                Enter Designee Email
+              </label>
+              <input
+                type="email"
+                placeholder="Designee Email"
+                value={designeeEmail}
+                onChange={(e) => setDesigneeEmail(e.target.value)}
+                className="border p-2 rounded w-full mb-4"
+              />
+            </div>
+            <button
+              onClick={handleAddDesignee}
+              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+            >
+              Invite to Cumulus
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
       {loading && <p>Loading...</p>}
 

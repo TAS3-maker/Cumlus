@@ -237,7 +237,7 @@ const Login = ({ name = "Daniel" }) => {
 
 //for otp working
             // setToken(data.accessToken);
-            // setUser(data.user.user_id);
+            setUser(data.user.user_id);
             // setUserData(data.user.username);
             // setUsername(data.user.email);
 
