@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, Camera, EllipsisVertical, Menu, X ,LogOut} from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
+import Cookies from 'js-cookie';
 import { Link, Navigate, NavLink, useLocation,useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/Apiconfig";
 import fetchUserData from "./fetchUserData";

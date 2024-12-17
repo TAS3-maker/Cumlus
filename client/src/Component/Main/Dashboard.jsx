@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Cookies from 'js-cookie';
 import { motion } from "framer-motion";
 import fetchUserData from "./fetchUserData";
 import { API_URL } from "../utils/Apiconfig";

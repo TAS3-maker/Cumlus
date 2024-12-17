@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../utils/Apiconfig';
+import Cookies from 'js-cookie';
 const fetchUserData = async () => {
 
   try {
