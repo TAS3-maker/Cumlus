@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, Camera, EllipsisVertical, Menu, X ,LogOut} from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
-import { Link, Navigate, NavLink, useLocation } from "react-router-dom";
+import { Link, Navigate, NavLink, useLocation,useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/Apiconfig";
 import fetchUserData from "./fetchUserData";
 const MobileSidebar = ({ onFolderSelect }) => {
@@ -30,6 +30,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
   const [designeePhone, setDesigneePhone] = useState(""); // Holds the input for designee phone number
   const [designeeEmail, setDesigneeEmail] = useState(""); // Holds the input for designee email
   const [deletebutton2, setDeletebutton2] = useState(false);
+  const navigate = useNavigate();
   const [openMenuId, setOpenMenuId] = useState(() => {
     try {
       const storedValue = localStorage.getItem("openMenuId");
@@ -77,7 +78,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
   async function logout() {
     try {
       // Retrieve token from local storage
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
   
       // Check if token exists
       if (!token) {
@@ -102,7 +103,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
       }
   
       // Optionally, clear the token from local storage
-      localStorage.removeItem("token");
+      Cookies.remove('token');
       navigate("/Login"); // Redirect to Dashboard
       console.log("Logged out successfully.");
     } catch (error) {
@@ -113,7 +114,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
   const fetchFolders = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      const token = Cookies.get('token');
       if (!token) {
         throw new Error("No token found. Please log in again.");
         setDeletebutton1(true);
@@ -154,7 +155,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
     }
   };
   const deleteFile = async (folder) => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get('token');
     const selectedFolder = folder; // Ensure folderId is set correctly
 
     console.log("Token:", token);
@@ -207,7 +208,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
     if (newFolder.trim()) {
       setLoading(true);
       try {
-        const token = localStorage.getItem("token");
+        const token = Cookies.get('token');
         if (!token) {
           throw new Error("No token found. Please log in again.");
         }

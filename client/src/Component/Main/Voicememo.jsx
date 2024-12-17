@@ -165,7 +165,7 @@ const Voicememo = () => {
   const handleNotifyChange = () => setNotify(!notify);
   const fetchAudioFiles = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
 
       if (!token) {
         console.log("No token found. Please log in.");
@@ -195,12 +195,13 @@ const Voicememo = () => {
   // };
   const handlePlay = async (file) => {
     try {
+      const token = Cookies.get('token');
       const response = await axios.post(
         `${API_URL}/api/voice-memo/listen-recording`,
         { voice_id: file._id },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -232,7 +233,7 @@ const Voicememo = () => {
 
     try {
       const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
 
       if (!token) {
         alert('No token found. Please log in.');
@@ -292,7 +293,7 @@ const Voicememo = () => {
   }, []);
 
   const deleteFile = async (folderId) => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get('token');
     const selectedvoice = folderId;
 
     console.log("Token:", token);

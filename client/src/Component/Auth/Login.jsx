@@ -2,6 +2,7 @@ import React from "react";
 import {
 Loader2
   } from "lucide-react";
+  import Cookies from 'js-cookie';
 import  { useState,useEffect } from "react";
 import logo from "../../assets/logo.png";
 import rightsignup from "../../assets/signup-right.png";
@@ -245,9 +246,8 @@ const Login = ({ name = "Daniel" }) => {
 
 
 
-
-            // Store in localStorage
-            localStorage.setItem("token", data.accessToken);
+            Cookies.set('token', data.accessToken, { expires: 7, secure: true, sameSite: 'strict' });
+            
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("user", data.user.username);
             localStorage.setItem("email", data.user.email);

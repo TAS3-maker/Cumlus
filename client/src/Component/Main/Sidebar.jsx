@@ -61,7 +61,7 @@ const Sidebar = ({ onFolderSelect }) => {
   async function logout() {
     try {
       // Retrieve token from local storage
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
   
       // Check if token exists
       if (!token) {
@@ -86,7 +86,7 @@ const Sidebar = ({ onFolderSelect }) => {
       }
   
       // Optionally, clear the token from local storage
-      localStorage.removeItem("token");
+      Cookies.remove('token');
       navigate("/Login"); // Redirect to Dashboard
       console.log("Logged out successfully.");
     } catch (error) {
@@ -131,7 +131,8 @@ const Sidebar = ({ onFolderSelect }) => {
   const fetchFolders = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      const token = Cookies.get('token');
+
       if (!token) {
         throw new Error("No token found. Please log in again.");
         setDeletebutton1(true);
@@ -161,7 +162,7 @@ const Sidebar = ({ onFolderSelect }) => {
     }
   };
   const deleteFile = async (folder) => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get('token');
     const selectedFolder = folder; // Ensure folderId is set correctly
   
     console.log("Token:", token);
@@ -242,7 +243,7 @@ const Sidebar = ({ onFolderSelect }) => {
     if (newFolder.trim()) {
       setLoading(true);
       try {
-        const token = localStorage.getItem("token");
+        const token = Cookies.get('token');
         if (!token) {
           throw new Error("No token found. Please log in again.");
         }

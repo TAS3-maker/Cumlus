@@ -282,7 +282,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
     try {
 
-      const token = localStorage.getItem('token');
+      const token = Cookies.get('token');
 
 
 
@@ -458,7 +458,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
     try {
 
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      const token = Cookies.get('token');
 
       if (!token) {
 
@@ -560,7 +560,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
     try {
 
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
 
   
 
@@ -905,7 +905,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       setIsUploading(true);
 
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
 
       if (!token) {
 
@@ -1057,7 +1057,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
   const deleteFile = async (file_id) => {
 
-    const token = localStorage.getItem("token");
+    const token = Cookies.get('token');
 
     const selectedFolder = folderId; // Ensure folderId is set correctly
 
@@ -1144,7 +1144,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
       setLoading(true);
       setError("");
 
-      const token = localStorage.getItem("token");
+      const token = Cookies.get('token');
       console.log("Retrieved Token:", token);
 
       if (!token) {

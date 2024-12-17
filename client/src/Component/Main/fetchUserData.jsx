@@ -3,7 +3,7 @@ import { API_URL } from '../utils/Apiconfig';
 const fetchUserData = async () => {
 
   try {
-     const token = localStorage.getItem('token');
+    const token = Cookies.get('token');
     const response = await axios.get(`${API_URL}/api/auth/get-user`, {
       headers: {
         Authorization: `Bearer ${token}`,
