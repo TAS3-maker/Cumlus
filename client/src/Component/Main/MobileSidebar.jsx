@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, Camera, EllipsisVertical, Menu, X } from "lucide-react";
+import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, Camera, EllipsisVertical, Menu, X ,LogOut} from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
 import { Link, Navigate, NavLink, useLocation } from "react-router-dom";

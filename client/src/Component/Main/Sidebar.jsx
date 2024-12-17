@@ -12,11 +12,12 @@ import {
   EllipsisVertical,
   Cross,
   x,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
-import { Link, Navigate, NavLink, useLocation } from "react-router-dom";
+import { Link, Navigate, NavLink, useLocation ,useNavigate } from "react-router-dom";
 import fetchUserData from "./fetchUserData";
 import { API_URL } from "../utils/Apiconfig";
 const Sidebar = ({ onFolderSelect }) => {
@@ -30,7 +31,7 @@ const Sidebar = ({ onFolderSelect }) => {
   //     "Designer 3",
   //     "Designer 4",
   // ]);
-
+  const navigate = useNavigate();
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showFolderInput, setShowFolderInput] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -56,6 +57,46 @@ const Sidebar = ({ onFolderSelect }) => {
   const [isMembershipActive, setIsMembershipActive] = useState(false);
   const [membershipDetail, setMembershipDetail] = useState(null);
   const [deletebutton1, setDeletebutton1] = useState(false);
+
+  async function logout() {
+    try {
+      // Retrieve token from local storage
+      const token = localStorage.getItem("token");
+  
+      // Check if token exists
+      if (!token) {
+        throw new Error("No token found. Please log in again.");
+      }
+  
+      // API endpoint for logout
+      const apiUrl = `${API_URL}/api/auth/signout`;
+  
+      // Set up the headers with Bearer token
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+  
+      // Make the API call
+      const response = await fetch(apiUrl, { method: 'POST', headers });
+  
+      // Check if logout was successful
+      if (!response.ok) {
+        throw new Error("Failed to log out. Please try again.");
+      }
+  
+      // Optionally, clear the token from local storage
+      localStorage.removeItem("token");
+      navigate("/Login"); // Redirect to Dashboard
+      console.log("Logged out successfully.");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
+  
+
+
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -560,7 +601,10 @@ const Sidebar = ({ onFolderSelect }) => {
               >
                 Invite to Cumulus
               </button>
+
+              
             </div>
+            
           </div>
         )}
       </div>
@@ -619,6 +663,19 @@ const Sidebar = ({ onFolderSelect }) => {
           <span className="ml-2">Help & Support</span>
         </div>
       </div>
+      <div className="py-60">
+      <button
+  onClick={logout}
+  className="text-gray-700 mt-[60px] hover:text-red-600 cursor-pointer flex font-medium rounded-md  transition duration-300"
+>
+
+      {/* Lucide Icon */}
+      <LogOut className="w-5 h-5 mr-2" />
+
+      {/* Button Text */}
+      <span>Sign Out</span>
+    </button>
+    </div>
       {/* </NavLink> */}
       {deletebutton && (
   <div

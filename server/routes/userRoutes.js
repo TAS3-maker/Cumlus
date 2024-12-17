@@ -502,6 +502,21 @@ router.get("/get-user", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Error fetching user data.", error: error.message });
   }
 });
+router.post("/signout", (req, res) => {
+  try {
+    // Clear the refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Ensure secure in production
+      sameSite: "strict", // CSRF protection
+    });
+
+    res.status(200).json({ message: "Successfully signed out." });
+  } catch (error) {
+    console.error("Error during signout:", error);
+    res.status(500).json({ message: "Error signing out.", error: error.message });
+  }
+});
 
 
 
