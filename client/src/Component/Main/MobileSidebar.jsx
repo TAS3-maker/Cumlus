@@ -74,7 +74,41 @@ const MobileSidebar = ({ onFolderSelect }) => {
   //     setIsEllipsesOpen(!isEllipsesOpen);
 
   // };
-
+  async function logout() {
+    try {
+      // Retrieve token from local storage
+      const token = localStorage.getItem("token");
+  
+      // Check if token exists
+      if (!token) {
+        throw new Error("No token found. Please log in again.");
+      }
+  
+      // API endpoint for logout
+      const apiUrl = `${API_URL}/api/auth/signout`;
+  
+      // Set up the headers with Bearer token
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+  
+      // Make the API call
+      const response = await fetch(apiUrl, { method: 'POST', headers });
+  
+      // Check if logout was successful
+      if (!response.ok) {
+        throw new Error("Failed to log out. Please try again.");
+      }
+  
+      // Optionally, clear the token from local storage
+      localStorage.removeItem("token");
+      navigate("/Login"); // Redirect to Dashboard
+      console.log("Logged out successfully.");
+    } catch (error) {
+      console.error(error);
+    }
+  }
   // Fetch folders from API
   const fetchFolders = async () => {
     setLoading(true);
@@ -539,6 +573,19 @@ const MobileSidebar = ({ onFolderSelect }) => {
               <span className="ml-2">Help & Support</span>
             </div>
           </div>
+          <div className="py-60">
+      <button
+  onClick={logout}
+  className="text-gray-700 mt-[60px] hover:text-red-600 cursor-pointer flex font-medium rounded-md  transition duration-300"
+>
+
+      {/* Lucide Icon */}
+      <LogOut className="w-5 h-5 mr-2" />
+
+      {/* Button Text */}
+      <span>Sign Out</span>
+    </button>
+    </div>
         </div>
         {deletebutton && (
           <div
