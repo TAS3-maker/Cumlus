@@ -250,6 +250,7 @@ const Login = ({ name = "Daniel" }) => {
 
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("user", data.user.user_id);
+            
             localStorage.setItem("email", data.user.email);
     
             if (!data.user.questions) { 

@@ -1,9 +1,29 @@
 import { useState, useEffect } from "react";
-import { Folder, Plus, Check, Mic, CircleArrowUp, Users, CircleAlertIcon, User, Camera, EllipsisVertical, Menu, X ,LogOut} from "lucide-react";
+import {
+  Folder,
+  Plus,
+  Check,
+  Mic,
+  CircleArrowUp,
+  Users,
+  CircleAlertIcon,
+  User,
+  Camera,
+  EllipsisVertical,
+  Menu,
+  X,
+  LogOut,
+} from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
-import Cookies from 'js-cookie';
-import { Link, Navigate, NavLink, useLocation,useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import {
+  Link,
+  Navigate,
+  NavLink,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { API_URL } from "../utils/Apiconfig";
 import fetchUserData from "./fetchUserData";
 const MobileSidebar = ({ onFolderSelect }) => {
@@ -79,32 +99,32 @@ const MobileSidebar = ({ onFolderSelect }) => {
   async function logout() {
     try {
       // Retrieve token from local storage
-      const token = Cookies.get('token');
-  
+      const token = Cookies.get("token");
+
       // Check if token exists
       if (!token) {
         throw new Error("No token found. Please log in again.");
       }
-  
+
       // API endpoint for logout
       const apiUrl = `${API_URL}/api/auth/signout`;
-  
+
       // Set up the headers with Bearer token
       const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       };
-  
+
       // Make the API call
-      const response = await fetch(apiUrl, { method: 'POST', headers });
-  
+      const response = await fetch(apiUrl, { method: "POST", headers });
+
       // Check if logout was successful
       if (!response.ok) {
         throw new Error("Failed to log out. Please try again.");
       }
-  
+
       // Optionally, clear the token from local storage
-      Cookies.remove('token');
+      Cookies.remove("token");
       navigate("/Login"); // Redirect to Dashboard
       console.log("Logged out successfully.");
     } catch (error) {
@@ -115,7 +135,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
   const fetchFolders = async () => {
     setLoading(true);
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get("token");
       if (!token) {
         throw new Error("No token found. Please log in again.");
         setDeletebutton1(true);
@@ -152,11 +172,11 @@ const MobileSidebar = ({ onFolderSelect }) => {
     // setSelectedFolder(folder.id); // Set the selected folder's ID
     // console.log(setSelectedFolder);
     if (onFolderSelect) {
-      onFolderSelect(folder.id);  // Pass the _id of the folder to the parent
+      onFolderSelect(folder.id); // Pass the _id of the folder to the parent
     }
   };
   const deleteFile = async (folder) => {
-    const token = Cookies.get('token');
+    const token = Cookies.get("token");
     const selectedFolder = folder; // Ensure folderId is set correctly
 
     console.log("Token:", token);
@@ -188,14 +208,17 @@ const MobileSidebar = ({ onFolderSelect }) => {
         setMessage(response.data.message || "Folder deleted successfully.");
       } else {
         setMessage(response.data.message || "Failed to delete the folder.");
-        setErrorMessage(response.data.message || "Failed to delete the folder.");
+        setErrorMessage(
+          response.data.message || "Failed to delete the folder."
+        );
         setOverlayVisible(true);
       }
       setDeletebutton(false);
     } catch (error) {
       console.error("Error deleting folder:", error?.response?.data || error);
       setErrorMessage(
-        error.response?.data?.message || "An error occurred while deleting the folder."
+        error.response?.data?.message ||
+          "An error occurred while deleting the folder."
       );
       setOverlayVisible(true);
     }
@@ -209,7 +232,7 @@ const MobileSidebar = ({ onFolderSelect }) => {
     if (newFolder.trim()) {
       setLoading(true);
       try {
-        const token = Cookies.get('token');
+        const token = Cookies.get("token");
         if (!token) {
           throw new Error("No token found. Please log in again.");
         }
@@ -225,7 +248,10 @@ const MobileSidebar = ({ onFolderSelect }) => {
         );
 
         const newFolderData = response.data.folder;
-        setFolders([...folders, { id: newFolderData._id, name: newFolderData.folder_name }]);
+        setFolders([
+          ...folders,
+          { id: newFolderData._id, name: newFolderData.folder_name },
+        ]);
         setNewFolder("");
         setShowFolderInput(false);
       } catch (error) {
@@ -235,8 +261,6 @@ const MobileSidebar = ({ onFolderSelect }) => {
       }
     }
   };
-
-
 
   const handleAddDesignee = () => {
     if (designeeName && designeePhone && designeeEmail) {
@@ -268,17 +292,18 @@ const MobileSidebar = ({ onFolderSelect }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-0 z-40 transform transition-all duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed inset-0 z-40 transform transition-all duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="flex flex-col w-64 bg-gray-100 p-4 space-y-4 min-h-screen">
           {/* Close Icon */}
           <div className="flex justify-between">
-            <div >
+            <div>
               <img
                 src={logo}
                 alt="Cumulus Logo"
-                style={{ width: '100vw', height: '30px' }}
+                style={{ width: "100vw", height: "30px" }}
               />
             </div>
             <button onClick={() => setIsOpen(false)}>
@@ -291,7 +316,9 @@ const MobileSidebar = ({ onFolderSelect }) => {
             <NavLink
               to="/folder/1"
               className={({ isActive }) =>
-                `flex mb-2 cursor-pointer p-2 rounded ${isActive ? "bg-blue-500 text-white" : "text-gray-700"}`
+                `flex mb-2 cursor-pointer p-2 rounded ${
+                  isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                }`
               }
               onClick={() => {
                 console.log("What is Cumulus clicked, sending folderId = 1");
@@ -304,7 +331,9 @@ const MobileSidebar = ({ onFolderSelect }) => {
             <NavLink
               to="/folder/0"
               className={({ isActive }) =>
-                `flex mb-2 cursor-pointer p-2 rounded ${isActive ? "bg-blue-500 text-white" : "text-gray-700"}`
+                `flex mb-2 cursor-pointer p-2 rounded ${
+                  isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                }`
               }
               onClick={() => {
                 console.log("All Files clicked, sending folderId = 0");
@@ -328,60 +357,64 @@ const MobileSidebar = ({ onFolderSelect }) => {
             </h2>
 
             <ul>
-              {(viewAllFolders ? folders : folders.slice(0, 3)).map((folder) => (
-                <NavLink
-                  key={folder.id}
-                  to={`/folder/${folder.id}`}
-                  onClick={(e) => {
-                    if (openMenuId === folder.id) {
-                      e.preventDefault();
-                    } else {
-                      handleFolderSelect(folder);
-                      setIsOpen(false);
-                    }
-                  }}
-                  className={({ isActive }) =>
-                    `py-1 px-2 flex items-center rounded cursor-pointer ${isActive ? "bg-blue-500 text-white" : "text-gray-700"}`
-                  }
-                >
-                  <div className="flex justify-between w-full relative">
-                    {folder.name}
-                    <button
-                      onClick={(e) => {
+              {(viewAllFolders ? folders : folders.slice(0, 3)).map(
+                (folder) => (
+                  <NavLink
+                    key={folder.id}
+                    to={`/folder/${folder.id}`}
+                    onClick={(e) => {
+                      if (openMenuId === folder.id) {
                         e.preventDefault();
-                        toggleEllipses(folder.id); // Handle menu toggle without navigation
-                      }}
-                    >
-                      <EllipsisVertical />
-                    </button>
+                      } else {
+                        handleFolderSelect(folder);
+                        setIsOpen(false);
+                      }
+                    }}
+                    className={({ isActive }) =>
+                      `py-1 px-2 flex items-center rounded cursor-pointer ${
+                        isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                      }`
+                    }
+                  >
+                    <div className="flex justify-between w-full relative">
+                      {folder.name}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleEllipses(folder.id); // Handle menu toggle without navigation
+                        }}
+                      >
+                        <EllipsisVertical />
+                      </button>
 
-                    {openMenuId === folder.id && (
-                      <div className="absolute top-full right-0 mt-2 w-32 bg-white shadow-lg rounded-lg text-black">
-                        <button
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100"
-                          onClick={(e) => {
-                            // e.stopPropagation();
-                            // setOpenMenuId(null);
-                            setDeletebutton(true); // Open Delete Confirmation Modal
-                            setSelectedFolder(folder.id); // Set Selected Folder
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </NavLink>
-              ))}
+                      {openMenuId === folder.id && (
+                        <div className="absolute top-full right-0 mt-2 w-32 bg-white shadow-lg rounded-lg text-black">
+                          <button
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                            onClick={(e) => {
+                              // e.stopPropagation();
+                              // setOpenMenuId(null);
+                              setDeletebutton(true); // Open Delete Confirmation Modal
+                              setSelectedFolder(folder.id); // Set Selected Folder
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </NavLink>
+                )
+              )}
             </ul>
 
             {!showFolderInput && (
@@ -473,7 +506,10 @@ const MobileSidebar = ({ onFolderSelect }) => {
                 <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                   <div className="flex justify-between items-center border-b pb-3">
                     <h3 className="text-lg font-semibold">Add Designee</h3>
-                    <button onClick={() => setShowDesignerPopup(false)} className="text-gray-500">
+                    <button
+                      onClick={() => setShowDesignerPopup(false)}
+                      className="text-gray-500"
+                    >
                       ✕
                     </button>
                   </div>
@@ -532,7 +568,8 @@ const MobileSidebar = ({ onFolderSelect }) => {
             <NavLink
               to="/voicememo"
               className={({ isActive }) =>
-                `flex mb-2 cursor-pointer p-2 rounded  ${isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                `flex mb-2 cursor-pointer p-2 rounded  ${
+                  isActive ? "bg-blue-500 text-white" : "text-gray-700"
                 }`
               }
               onClick={() => setIsOpen(false)}
@@ -540,7 +577,6 @@ const MobileSidebar = ({ onFolderSelect }) => {
               <h2 className="ml-3">Create A Voicememo</h2>
             </NavLink>
           </div>
-
 
           {/* Transfer */}
           <div>
@@ -558,16 +594,17 @@ const MobileSidebar = ({ onFolderSelect }) => {
             <div className="text-gray-700 py-1 hover:text-blue-500 cursor-pointer flex">
               <NavLink
                 className={({ isActive }) =>
-                  `py-1 px-2 flex items-center rounded cursor-pointer  ${isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                  `py-1 px-2 flex items-center rounded cursor-pointer  ${
+                    isActive ? "bg-blue-500 text-white" : "text-gray-700"
                   }`
                 }
-                to="/SharedFiles">
+                to="/SharedFiles"
+              >
                 <Users />
                 <span className="ml-2">Shared With Me</span>
               </NavLink>
             </div>
           </div>
-
 
           <div className="mt-auto">
             <div className="text-gray-700 py-1 hover:text-blue-500 cursor-pointer flex">
@@ -575,19 +612,18 @@ const MobileSidebar = ({ onFolderSelect }) => {
               <span className="ml-2">Help & Support</span>
             </div>
           </div>
-          <div className="py-60">
-      <button
-  onClick={logout}
-  className="text-gray-700 mt-[60px] hover:text-red-600 cursor-pointer flex font-medium rounded-md  transition duration-300"
->
+          <div className="py-35">
+            <button
+              onClick={logout}
+              className="text-gray-700  hover:text-red-600 cursor-pointer flex font-medium rounded-md  transition duration-300"
+            >
+              {/* Lucide Icon */}
+              <LogOut className="w-5 h-5 mr-2" />
 
-      {/* Lucide Icon */}
-      <LogOut className="w-5 h-5 mr-2" />
-
-      {/* Button Text */}
-      <span>Sign Out</span>
-    </button>
-    </div>
+              {/* Button Text */}
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
         {deletebutton && (
           <div
@@ -602,8 +638,12 @@ const MobileSidebar = ({ onFolderSelect }) => {
                   Are you sure to delete this folder?
                 </h2>
               </div>
-              <div id="deleteModalDescription" className="text-sm text-gray-600 mb-4">
-                This action cannot be undone. Please confirm if you'd like to proceed.
+              <div
+                id="deleteModalDescription"
+                className="text-sm text-gray-600 mb-4"
+              >
+                This action cannot be undone. Please confirm if you'd like to
+                proceed.
               </div>
               <div className="flex justify-end gap-2 my-2">
                 <button
@@ -665,7 +705,6 @@ const MobileSidebar = ({ onFolderSelect }) => {
         {deletebutton1 && (
           <div
             className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-
             role="dialog"
             aria-labelledby="deleteModalLabel"
             aria-describedby="deleteModalDescription"
@@ -681,15 +720,15 @@ const MobileSidebar = ({ onFolderSelect }) => {
                 id="deleteModalDescription"
                 className="text-sm text-gray-600 mb-4"
               >
-                Your session has been expired
-                please re-login to
+                Your session has been expired please re-login to
               </div>
 
               <div className="flex justify-end gap-2 my-2">
-                <NavLink
-                  to="/Login">
-                  <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={() => setDeletebutton1(false)}>
+                <NavLink to="/Login">
+                  <button
+                    className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => setDeletebutton1(false)}
+                  >
                     Login
                   </button>
                 </NavLink>
@@ -698,11 +737,9 @@ const MobileSidebar = ({ onFolderSelect }) => {
           </div>
         )}
 
-
         {deletebutton2 && (
           <div
             className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-
             role="dialog"
             aria-labelledby="deleteModalLabel"
             aria-describedby="deleteModalDescription"
@@ -728,10 +765,11 @@ const MobileSidebar = ({ onFolderSelect }) => {
                 >
                   Cancel
                 </button>
-                <NavLink
-                  to="/Subscription">
-                  <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={() => setDeletebutton2(false)}>
+                <NavLink to="/Subscription">
+                  <button
+                    className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => setDeletebutton2(false)}
+                  >
                     Take Membership
                   </button>
                 </NavLink>
@@ -742,7 +780,6 @@ const MobileSidebar = ({ onFolderSelect }) => {
       </div>
     </>
   );
-}
-
+};
 
 export default MobileSidebar;

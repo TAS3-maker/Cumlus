@@ -33,6 +33,7 @@ const Navbar = ({onFolderSelect}) => {
                 console.log("data user",data.user);
                 setIsMembershipActive(data.user.activeMembership);
                 setMembershipDetail(data.user.memberships);
+                setUsername(data.user.username);
                 console.log("details",data.user.membershipDetail);
                 console.log("membership",data.user.isMembershipActive);
             } catch (err) {
@@ -44,7 +45,7 @@ const Navbar = ({onFolderSelect}) => {
     
     useEffect(() => {
         // Retrieve the user data from localStorage
-        const storedUser = localStorage.getItem("user");
+        const storedUser = localStorage.getItem("username");
         const storedEmail = localStorage.getItem("email");
         console.log("krcnjrncirc", storedUser);
         console.log("krcnjrncirc", storedEmail);
@@ -123,7 +124,7 @@ const Navbar = ({onFolderSelect}) => {
                         alt="User"
                         className="h-8 w-8 rounded-full object-cover"
                     />
-                    <p className="text-black mt-1 ml-1 hidden md:block">{email}</p>
+                    <p className="text-black mt-1 ml-1 hidden md:block">{username}</p>
                 </div>
             </div>                  
 
