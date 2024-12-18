@@ -25,6 +25,7 @@ const Sidebar = ({ onFolderSelect }) => {
   const [deletebutton, setDeletebutton] = useState(false);
   const [deletebutton2, setDeletebutton2] = useState(false);
   const [folders, setFolders] = useState([]);
+  
   const location = useLocation(); // Access current URL for routing
   // const [designers, setDesigners] = useState([
   //     "Hariom Gupta",

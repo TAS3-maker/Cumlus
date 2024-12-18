@@ -588,8 +588,8 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
       if (folderId === 0) {
-        const userId = localStorage.getItem("userId");
-
+        const userId = localStorage.getItem("user");
+console.log("userrrrrId",userId);
 
         if (!userId) {
 
@@ -607,7 +607,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
           {
 
-            params: { user_id: userId },  // Correctly pass user_id as a query parameter
+            // params: { user_id: userId },  // Correctly pass user_id as a query parameter
 
             headers: { Authorization: `Bearer ${token}` },
 
@@ -1000,8 +1000,8 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
   const toggleEllipses = (fileId) => {
-    const newOpenMenuId = openMenuId === fileId ? null : fileId; 
-    setOpenMenuId(newOpenMenuId);
+    // Toggle the menu for the specific file by comparing the IDs
+    setOpenMenuId((prevId) => (prevId === fileId ? null : fileId));
   };
 
 
@@ -1993,14 +1993,14 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation(); 
-                    toggleEllipses(file.id); 
+                    toggleEllipses(file._id); 
                   }}
                 >
                   <EllipsisVertical />
                 </button>
 
                 {/* Dropdown Menu */}
-                {openMenuId === file.id && (
+                {openMenuId === file._id && (
                   <motion.div
                     className="absolute top-5  mt-2 w-48 bg-white shadow-lg rounded-lg text-black flex flex-col gap-y-2 p-2 z-50 "
                     initial={{ opacity: 0, scale: 0.9, y: -10 }}

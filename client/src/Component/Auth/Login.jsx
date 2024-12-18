@@ -247,9 +247,9 @@ const Login = ({ name = "Daniel" }) => {
 
 
             Cookies.set('token', data.accessToken, { expires: 7, secure: true, sameSite: 'strict' });
-            
+
             localStorage.setItem("token", data.accessToken);
-            localStorage.setItem("user", data.user.username);
+            localStorage.setItem("user", data.user.user_id);
             localStorage.setItem("email", data.user.email);
     
             if (!data.user.questions) { 
