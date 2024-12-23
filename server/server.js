@@ -4,12 +4,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-
+const stripeRoutes = require('./routes/stripeRoutes');
 const { router: userRoutes } = require('./routes/userRoutes');
 const fileuploadRoutes = require("./routes/fileuploadRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const voiceuploadRoutes = require("./routes/voiceuploadRoutes");
 const defaultfileRoutes = require("./routes/defaultfileRoutes");
+const membershipRoutes = require("./routes/membershipRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://51.20.135.111:3000', // Adjust as per your frontend URL
+  origin: 'http://localhost:3000', // Adjust as per your frontend URL
   credentials: true, // Allow cookies to be sent with requests
 }));
 
@@ -38,6 +39,8 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api", fileuploadRoutes);
 app.use("/api/voice-memo", voiceuploadRoutes);
 app.use("/api/default", defaultfileRoutes);
+app.use('/api/stripe', stripeRoutes);
+app.use('/api', membershipRoutes);
 
 const DB_URI = process.env.DB_URI;
 mongoose

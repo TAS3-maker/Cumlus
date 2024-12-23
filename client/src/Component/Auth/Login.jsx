@@ -258,7 +258,13 @@ const Login = ({ name = "Daniel" }) => {
             } else if (!data.user.phoneNumber || data.user.phoneNumber.trim() === "") {
                 setCurrentStep(2);
                 setDialogOpen2(true);
-            } else {
+            } 
+            if (!data.activeMembership){
+
+                console.log("membershipppp",data.user.activeMembership)
+                navigate("/Subscription");
+            }
+            else  {
                 // navigate("/folder/1"); // Redirect to Dashboard
 
                 // handleSendOTP();   this is modication
@@ -467,25 +473,23 @@ const Login = ({ name = "Daniel" }) => {
     
        
 
-    // }; 
-
     return (
-        <div className="flex flex-col md:flex-row h-screen text-white md:justify-center">
+        <div className="flex flex-col md:flex-row h-screen text-white justify-center">
             {/* Left Section */}
             <div id="recaptcha-container"></div>
-            <div className="md:w-2/4 w-full flex flex-col justify-center items-center p-3 md:p-6">
-                <div className="bg-white text-black p-6 rounded-lg  w-full max-w-md">
+            <div className="lg:w-2/4 w-full flex flex-col justify-center items-center p-3 md:p-6">
+                <div className="bg-white text-black p-10 rounded-lg min-w-full max-w-md">
                     {/* Logo */}
-                    <div className="flex items-center mb-4">
+                    <div className="flex  items-center mb-4 lg:w-full sm:w-[80%] w-full">
                         <img
                             src={logo}
                             alt="Cumulus Logo"
-                            className="h-10 w-full"
+                            className="min-h-10 w-full object-fit "
                         />
                     </div>
 
                     {/* Dynamic Name */}
-                    <h1 className="text-2xl font-bold  mb-2">
+                    <h1 className="text-2xl font-bold mb-2 text-center lg:text-left ">
                         Hello, {name}
                     </h1>
                     <p className=" text-gray-600 mb-6">
@@ -562,7 +566,7 @@ const Login = ({ name = "Daniel" }) => {
                 <img
                     src={rightsignup}
                     alt="Illustration"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fit"
                 />
             </div>
             {isDialogOpen && (

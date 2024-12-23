@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 import Cookies from 'js-cookie';
+import FolderNotch from "../../assets/FolderNotch.png"
+import WhiteFolderNotch from "../../assets/WhiteFolderNotch.png"
+import Microphone from "../../assets/Microphone.png"
+import Allfiles from "../../assets/Allfiles.png"
+import blackallfiles from "../../assets/blackallfiles.png"
+import aftertlife from "../../assets/affterlife.png"
 import {
   Folder,
   Plus,
@@ -14,18 +20,19 @@ import {
   Cross,
   x,
   X,
-  LogOut
+  LogOut,
+  FolderOpen
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 import axios from "axios";
-import { Link, Navigate, NavLink, useLocation ,useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
 import fetchUserData from "./fetchUserData";
 import { API_URL } from "../utils/Apiconfig";
 const Sidebar = ({ onFolderSelect }) => {
   const [deletebutton, setDeletebutton] = useState(false);
   const [deletebutton2, setDeletebutton2] = useState(false);
   const [folders, setFolders] = useState([]);
-  
+
   const location = useLocation(); // Access current URL for routing
   // const [designers, setDesigners] = useState([
   //     "Hariom Gupta",
@@ -60,43 +67,9 @@ const Sidebar = ({ onFolderSelect }) => {
   const [membershipDetail, setMembershipDetail] = useState(null);
   const [deletebutton1, setDeletebutton1] = useState(false);
 
-  async function logout() {
-    try {
-      // Retrieve token from local storage
-      const token = Cookies.get('token');
-  
-      // Check if token exists
-      if (!token) {
-        throw new Error("No token found. Please log in again.");
-      }
-  
-      // API endpoint for logout
-      const apiUrl = `${API_URL}/api/auth/signout`;
-  
-      // Set up the headers with Bearer token
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-  
-      // Make the API call
-      const response = await fetch(apiUrl, { method: 'POST', headers });
-  
-      // Check if logout was successful
-      if (!response.ok) {
-        throw new Error("Failed to log out. Please try again.");
-      }
-  
-      // Optionally, clear the token from local storage
-      Cookies.remove('token');
-      navigate("/Login"); // Redirect to Dashboard
-      console.log("Logged out successfully.");
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  
-  
+
+
+
 
 
   useEffect(() => {
@@ -166,22 +139,22 @@ const Sidebar = ({ onFolderSelect }) => {
   const deleteFile = async (folder) => {
     const token = Cookies.get('token');
     const selectedFolder = folder; // Ensure folderId is set correctly
-  
+
     console.log("Token:", token);
     console.log("Selected Folder ID:", selectedFolder);
-  
+
     if (!token) {
       setMessage("No token found. Please log in.");
       console.error("Missing token");
       return;
     }
-  
+
     if (!selectedFolder) {
       setMessage("No folder selected.");
       console.error("Missing folderId");
       return;
     }
-  
+
     try {
       const response = await axios.post(
         `${API_URL}/api/delete-folder`,
@@ -190,12 +163,12 @@ const Sidebar = ({ onFolderSelect }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       if (response.status === 200) {
         setOpenMenuId(false);
         fetchFolders();
         setMessage(response.data.message || "Folder deleted successfully.");
-        
+
       } else {
         setMessage(response.data.message || "Failed to delete the folder.");
         setErrorMessage(response.data.message || "Failed to delete the folder.");
@@ -214,7 +187,7 @@ const Sidebar = ({ onFolderSelect }) => {
     setOverlayVisible(false);
     setErrorMessage("");
   };
-  
+
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -303,22 +276,21 @@ const Sidebar = ({ onFolderSelect }) => {
     }
   }, [location, onFolderSelect]);
   return (
-    <div className="hidden md:flex flex-col w-64 bg-gray-100 p-4 space-y-0 min-h-screen ">
-      <div style={{ width: "25vw", maxWidth: "none" }} className="mb-5">
+    <div className="hidden md:flex flex-col  min-h-screen w-64 bg-gray-100 p-3 space-y-0  overflow-hidden">
+      <div style={{ width: "20vw", maxWidth: "none" }} className="mb-5">
         <img
           src={logo}
           alt="Cumulus Logo"
-          style={{ width: "100vw", height: "50px" }}
+          style={{ width: "100vw" }}
         />
       </div>
 
       {/* Folders Section */}
       <div>
-        <NavLink
+        {/* <NavLink
           to="/folder/1"
           className={({ isActive }) =>
-            `flex mb-2 cursor-pointer p-2 rounded ${
-              isActive ? "bg-blue-500 text-white" : "text-gray-700"
+            `flex mb-2 cursor-pointer border  p-2 rounded ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"
             }`
           }
           onClick={() => {
@@ -326,28 +298,44 @@ const Sidebar = ({ onFolderSelect }) => {
             onFolderSelect(1);
           }}
         >
-          <h2 className="ml-3 font-bold">What is Cumulus</h2>
-        </NavLink>
+          <h2 className="ml-3 font-semibold text-sm">What is Cumulus</h2>
+        </NavLink> */}
+
+
         <NavLink
           to="/folder/0"
           className={({ isActive }) =>
-            `flex mb-2 cursor-pointer p-2 rounded ${
-              isActive ? "bg-blue-500 text-white" : "text-gray-700"
-            }`
+            `flex  cursor-pointer p-2 rounded ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"}`
           }
           onClick={() => {
             console.log("All Files clicked, sending folderId = 0");
             onFolderSelect(0);
+            setOpenMenuId(null);
           }}
         >
-          <h2 className="ml-3">All Files</h2>
+          {({ isActive }) => (
+            <span className="flex items-center h-6">
+
+              <img
+                src={isActive ? Allfiles : blackallfiles}
+                alt="All Files"
+                className="h-full"
+              />
+              <h2 className="ml-3 text-sm">All Files</h2>
+            </span>
+          )}
         </NavLink>
 
-        <h2 className="font-semibold text-xs mb-2">
+
+
+        <h2 className="font-semibold text-[#667085] text-xs mt-2">
           {folders.length} Folders
-          {folders.length > 3 && (
+          {folders.length + 1> 3 && (
             <button
-              onClick={() => setViewAllFolders(!viewAllFolders)}
+              onClick={() => {setViewAllFolders(!viewAllFolders);
+                setOpenMenuId(null);
+              }
+            }
               className="text-blue-500 text-xs float-right"
             >
               {viewAllFolders ? "View Less" : "View All"}
@@ -357,101 +345,135 @@ const Sidebar = ({ onFolderSelect }) => {
         {loading && <p>Loading folders...</p>}
 
         <ul>
-          {(viewAllFolders ? folders : folders.slice(0, 3)).map((folder) => (
-            <NavLink
-              key={folder.id}
-              to={`/folder/${folder.id}`}
-              onClick={(e) => {
-                if (openMenuId === folder.id) {
-                  e.preventDefault();
-                } else {
-                  handleFolderSelect(folder);
-                }
-              }}
-              className={({ isActive }) =>
-                `py-1 px-2 flex items-center rounded cursor-pointer ${
-                  isActive ? "bg-blue-500 text-white" : "text-gray-700"
-                }`
-              }
-            >
-              <div className="flex justify-between w-full relative">
-                {folder.name}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleEllipses(folder.id); // Handle menu toggle without navigation
-                  }}
-                >
-                  <EllipsisVertical />
-                </button>
+  <NavLink
+    to="/folder/1"
+    className={({ isActive }) =>
+      `py-1 px-2 flex items-center rounded cursor-pointer ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"}`
+    }
+    onClick={() => {
+      console.log("What is Cumulus clicked, sending folderId = 1");
+      onFolderSelect(1);
+      setOpenMenuId(null);
+    }}
+  >
+    {({ isActive }) => (
+      <span className="flex gap-2">
+        <img
+          src={isActive ? WhiteFolderNotch : FolderNotch} // Use active/inactive images
+          alt="Folder"
+          className="h-6 font-bold"
+        />
+        <h2>Cumulus</h2>
+      </span>
+    )}
+  </NavLink>
 
-                {/* Menu Options */}
-                {openMenuId === folder.id && (
-          <div className="absolute top-full right-0 mt-2 w-32 bg-white shadow-lg rounded-lg text-black">
-            <button
-              className="w-full px-4 py-2 text-left hover:bg-gray-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenMenuId(null);
-              }}
-            >
-              Edit
-            </button>
-            <button
-              className="w-full px-4 py-2 text-left hover:bg-gray-100"
-              onClick={(e) => {
-                // e.stopPropagation();
-                // setOpenMenuId(null);
-                setDeletebutton(true); // Open Delete Confirmation Modal
-                setSelectedFolder(folder.id); // Set Selected Folder
-              }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            </NavLink>
-          ))}
-        </ul>
+  {(viewAllFolders ? folders : folders.slice(0, 3)).map((folder) => (
+    <NavLink
+      key={folder.id}
+      to={`/folder/${folder.id}`}
+      onClick={(e) => {
+        if (openMenuId === folder.id) {
+          e.preventDefault();
+        } else {
+          handleFolderSelect(folder);
+        }
+      }}
+      className={({ isActive }) =>
+        `py-1 px-2 flex items-center rounded cursor-pointer ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"}`
+      }
+    >
+      {({ isActive }) => (
+        <div className="flex justify-between w-full relative">
+          <span className="flex gap-2">
+            {/* Conditionally render the image based on isActive */}
+            <img
+              src={isActive ? WhiteFolderNotch : FolderNotch} // Use active/inactive images
+              alt="Folder"
+              className="h-6 font-bold"
+            />
+            {folder.name}
+          </span>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleEllipses(folder.id); // Handle menu toggle without navigation
+            }}
+          >
+            <EllipsisVertical className="font-thin h-5" />
+          </button>
+
+          {/* Menu Options */}
+          {openMenuId === folder.id && (
+            <div className="absolute top-full right-0 mt-2 w-32 bg-white shadow-lg rounded-lg text-black z-20">
+              <button
+                className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenuId(null);
+                }}
+              >
+                Edit
+              </button>
+              <button
+                className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                onClick={(e) => {
+                  setDeletebutton(true); // Open Delete Confirmation Modal
+                  setSelectedFolder(folder.id); // Set Selected Folder
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </NavLink>
+  ))}
+</ul>
+
+
         {!showFolderInput && (
           <button
             onClick={() => {
               if (isMembershipActive) {
                 setShowFolderInput(true);
+                setOpenMenuId(null);
               } else {
                 setDeletebutton2(true);
+                setOpenMenuId(null);
               }
             }}
-            className="flex items-center w-full text-blue-500 mt-2 justify-center border"
+            className="flex items-center w-full bg-gray-200 py-1 text-black rounded-md mt-1 justify-center border"
           >
             <Plus className="mr-2" />
             Add Folder
           </button>
         )}
-  {showFolderInput && (
-  <div className="flex items-center mt-2">
-    <input
-      type="text"
-      placeholder="New Folder Name"
-      value={newFolder}
-      onChange={(e) => setNewFolder(e.target.value)}
-      className="border p-2 rounded w-full mr-2"
-    />
-    <button onClick={handleAddFolder} className="text-green-500 mr-2">
-      <Check />
-    </button>
-    <button
-      onClick={() => {
-        setShowFolderInput(false); // Close the input box
-        setNewFolder(""); // Optionally reset the input
-      }}
-      className="text-red-500"
-    >
-      <X />
-    </button>
-  </div>
-)}
+        {showFolderInput && (
+          <div className="flex items-center mt-2">
+            <input
+              type="text"
+              placeholder="New Folder Name"
+              value={newFolder}
+              onChange={(e) => setNewFolder(e.target.value)}
+              className="border p-2 rounded w-full mr-2"
+            />
+            <button onClick={handleAddFolder} className="text-green-500 mr-2">
+              <Check />
+            </button>
+            <button
+              onClick={() => {
+                setShowFolderInput(false); // Close the input box
+                setNewFolder(""); // Optionally reset the input
+              }}
+              className="text-red-500"
+            >
+              <X />
+            </button>
+          </div>
+        )}
         {/* {error && <p className="text-red-500 mt-2">{error}</p>} */}
       </div>
 
@@ -507,12 +529,14 @@ const Sidebar = ({ onFolderSelect }) => {
             </div> */}
 
       {/* Designees Section */}
-      <div>
-        <h2 className="font-semibold text-xs mb-2">
+      <div className="">
+        <h2 className="font-semibold text-[#667085] text-xs mt-2">
           {designers.length} Designees
           {designers.length > 3 && (
             <button
-              onClick={() => setViewAllDesigners(!viewAllDesigners)}
+              onClick={() => {setViewAllDesigners(!viewAllDesigners);
+              setOpenMenuId(null);
+              }}
               className="text-blue-500 text-xs float-right"
             >
               {viewAllDesigners ? "View Less" : "View All"}
@@ -536,12 +560,14 @@ const Sidebar = ({ onFolderSelect }) => {
         <button
           onClick={() => {
             if (isMembershipActive) {
+              setOpenMenuId(null);
               setShowDesignerPopup(true);
             } else {
+              setOpenMenuId(null);
               setDeletebutton2(true);
             }
           }}
-          className="flex items-center w-full text-blue-500 mt-2 justify-center border"
+          className="flex items-center w-full bg-gray-200 p-1 text-black mt-2 rounded-md justify-center border"
         >
           <Plus className="mr-2" />
           Add Designer
@@ -605,9 +631,9 @@ const Sidebar = ({ onFolderSelect }) => {
                 Invite to Cumulus
               </button>
 
-              
+
             </div>
-            
+
           </div>
         )}
       </div>
@@ -619,104 +645,105 @@ const Sidebar = ({ onFolderSelect }) => {
             </div> */}
 
       {/* Voice memo */}
-      <div>
-        <h2 className="font-bold mb-1">Voice memo</h2>
+      <div className="">
+        <h2 className="font-normal text-[#667085] mt-2">Voice memo</h2>
         <NavLink
           to="/voicememo"
+          onClick={()=>  setOpenMenuId(null)}
           className={({ isActive }) =>
-            `flex mb-2 cursor-pointer p-2 rounded  ${
-              isActive ? "bg-blue-500 text-white" : "text-gray-700"
+            `flex mb-2 cursor-pointer p-2 rounded  ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"
             }`
           }
         >
-          <h2 className="ml-3">Create A Voicememo</h2>
+          <span className="flex  h-6">
+            <img src={Microphone} alt="" />
+            <h2 className="ml-3 ">Create A Voicememo</h2>
+          </span>
+
         </NavLink>
       </div>
 
       {/* Transfer */}
       <div>
-        <h2 className="font-bold mb-1">Transfer</h2>
-        <div className="text-gray-700 py-1 hover:text-blue-500 cursor-pointer flex">
-          <CircleArrowUp />
-          <span className="ml-2">Sharing After Death</span>
+        <h2 className="font-normal text-[#667085]">Transfer</h2>
+        <div className="text-[#434A60] py-1 pl-2 hover:text-blue-500 cursor-pointer flex">
+         <img src={aftertlife} alt="" className="h-6"/>
+          <span className="ml-3">Sharing After Death</span>
         </div>
       </div>
 
       {/* Shared Files */}
 
-      <div>
-        <h2 className="font-bold mb-1">Share file</h2>
+      <div className="">
+        <h2 className="font-normal text-[#667085] mt-1">Share file</h2>
         <NavLink
           to="/SharedFiles"
+          onClick={()=>  setOpenMenuId(null)}
           className={({ isActive }) =>
-            `flex mb-2 cursor-pointer p-2 rounded  ${
-              isActive ? "bg-blue-500 text-white" : "text-gray-700"
+            `flex mb-2 cursor-pointer p-2 rounded  ${isActive ? "bg-blue-500 text-white" : "text-[#434A60]"
             }`
           }
         >
-          <h2 className="ml-3">Share With Me</h2>
+          <span className="flex ">
+            <Users className="" />
+            <h2 className="ml-3">Share With Me</h2>
+          </span>
+
         </NavLink>
       </div>
 
       {/* Help & Support */}
-      {/* <NavLink to=""> */}
-      <div className="mt-auto">
-        <div className="text-gray-700 py-1 hover:text-blue-500 cursor-pointer flex">
-          <CircleAlertIcon />
-          <span className="ml-2">Help & Support</span>
-        </div>
-      </div>
-      <div className="py-60">
-      <button
-  onClick={logout}
-  className="text-gray-700 mt-[60px] hover:text-red-600 cursor-pointer flex font-medium rounded-md  transition duration-300"
->
-
-      {/* Lucide Icon */}
-      <LogOut className="w-5 h-5 mr-2" />
-
-      {/* Button Text */}
-      <span>Sign Out</span>
-    </button>
+      <div className="flex-grow"></div>
+      <div className="mt-auto ">
+      <button className="flex w-full  p-2 text-[#667085]  rounded-md ">
+        <span className="flex gap-2">
+          <CircleAlertIcon/>
+          Help and Support</span>
+      </button>
     </div>
+
+
+
+
+
       {/* </NavLink> */}
       {deletebutton && (
-  <div
-    className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-    role="dialog"
-    aria-labelledby="deleteModalLabel"
-    aria-describedby="deleteModalDescription"
-  >
-    <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
-      <div className="flex justify-between items-center mb-4">
-        <h2 id="deleteModalLabel" className="text-lg font-semibold">
-          Are you sure to delete this folder?
-        </h2>
-      </div>
-      <div id="deleteModalDescription" className="text-sm text-gray-600 mb-4">
-        This action cannot be undone. Please confirm if you'd like to proceed.
-      </div>
-      <div className="flex justify-end gap-2 my-2">
-        <button
-          onClick={() => setDeletebutton(false)}
-          className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <div
+          className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-labelledby="deleteModalLabel"
+          aria-describedby="deleteModalDescription"
         >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            deleteFile(selectedFolder); // Pass Selected Folder ID
-            setDeletebutton(false);
-          }}
-          className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Yes
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-{overlayVisible && (
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 id="deleteModalLabel" className="text-lg font-semibold">
+                Are you sure to delete this folder?
+              </h2>
+            </div>
+            <div id="deleteModalDescription" className="text-sm text-gray-600 mb-4">
+              This action cannot be undone. Please confirm if you'd like to proceed.
+            </div>
+            <div className="flex justify-end gap-2 my-2">
+              <button
+                onClick={() => setDeletebutton(false)}
+                className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  deleteFile(selectedFolder); // Pass Selected Folder ID
+                  setDeletebutton(false);
+                }}
+                className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {overlayVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-11/12 max-w-md rounded-lg shadow-lg p-6 relative">
             {/* Close Button */}
@@ -753,82 +780,82 @@ const Sidebar = ({ onFolderSelect }) => {
           </div>
         </div>
       )}
-        {deletebutton1 && (
-          <div
+      {deletebutton1 && (
+        <div
           className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
 
-            role="dialog"
-            aria-labelledby="deleteModalLabel"
-            aria-describedby="deleteModalDescription"
-          >
-            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+          role="dialog"
+          aria-labelledby="deleteModalLabel"
+          aria-describedby="deleteModalDescription"
+        >
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 id="deleteModalLabel" className="text-lg font-semibold">
                 Session Expired
-                </h2>
-              </div>
+              </h2>
+            </div>
 
-              <div
-                id="deleteModalDescription"
-                className="text-sm text-gray-600 mb-4"
-              >
-                Your session has been expired
-                please re-login to 
-              </div>
+            <div
+              id="deleteModalDescription"
+              className="text-sm text-gray-600 mb-4"
+            >
+              Your session has been expired
+              please re-login to
+            </div>
 
-              <div className="flex justify-end gap-2 my-2">
- <NavLink
-          to="/Login">
+            <div className="flex justify-end gap-2 my-2">
+              <NavLink
+                to="/Login">
                 <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                 onClick={() => setDeletebutton1(false)}>
+                  onClick={() => setDeletebutton1(false)}>
                   Login
                 </button>
-                </NavLink>
-              </div>
+              </NavLink>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-{deletebutton2 && (
-          <div
+      {deletebutton2 && (
+        <div
           className="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
 
-            role="dialog"
-            aria-labelledby="deleteModalLabel"
-            aria-describedby="deleteModalDescription"
-          >
-            <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="deleteModalLabel" className="text-lg font-semibold">
+          role="dialog"
+          aria-labelledby="deleteModalLabel"
+          aria-describedby="deleteModalDescription"
+        >
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full m-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 id="deleteModalLabel" className="text-lg font-semibold">
                 You have no active membership
-                </h2>
-              </div>
+              </h2>
+            </div>
 
-              <div
-                id="deleteModalDescription"
-                className="text-sm text-gray-600 mb-4"
+            <div
+              id="deleteModalDescription"
+              className="text-sm text-gray-600 mb-4"
+            >
+              Take a membership to access this feature.
+            </div>
+
+            <div className="flex justify-end gap-2 my-2">
+              <button
+                onClick={() => setDeletebutton2(false)}
+                className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Take a membership to access this feature.
-              </div>
-
-              <div className="flex justify-end gap-2 my-2">
-                <button
-                  onClick={() => setDeletebutton2(false)}
-                  className="border-2 border-blue-500 text-gray-700 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Cancel
-                </button>
- <NavLink
-          to="/Subscription">
+                Cancel
+              </button>
+              <NavLink
+                to="/Subscription">
                 <button className="bg-blue-500 text-white px-6 py-2 rounded flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                 onClick={() => setDeletebutton2(false)}>
+                  onClick={() => setDeletebutton2(false)}>
                   Take Membership
                 </button>
-                </NavLink>
-              </div>
+              </NavLink>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };

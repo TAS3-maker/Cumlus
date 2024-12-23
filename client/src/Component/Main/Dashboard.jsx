@@ -3,6 +3,9 @@ import Cookies from 'js-cookie';
 import { motion } from "framer-motion";
 import fetchUserData from "./fetchUserData";
 import { API_URL } from "../utils/Apiconfig";
+import shareicon from "../../assets/ShareIcon.png"
+import fileupload from "../../assets/fileupload.png"
+
 import {
 
   ArrowRight,
@@ -34,6 +37,9 @@ import {
   Menu,
 
   LayoutGrid,
+  Share2Icon,
+  Search,
+  Check,
 
 } from "lucide-react";
 
@@ -160,6 +166,9 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   const [need, setNeed] = useState([]);
 
   const [token, setToken] = useState([]);
+  const [editingFileId, setEditingFileId] = useState(null); // ID of the file being edited
+
+  const [tempFileName, setTempFileName] = useState("")
 
   // const [users, setUsers] = useState([
 
@@ -202,6 +211,24 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
   const [membershipDetail, setMembershipDetail] = useState(null);
   const [userData, setUserData] = useState(null);
   const [deletebutton1, setDeletebutton1] = useState(false);
+  const [filteredFiles , setFilteredFiles] = useState();
+  const [username, setUsername] = useState("");
+  const handleEditnameFile = (file) => {
+    setEditingFileId(file.id);
+    setTempFileName(file.name);
+  };
+
+  const handleSaveFileName = (fileId) => {
+    // Save the new name logic here
+    const updatedFiles = filteredFiles.map((file) =>
+      file.id === fileId ? { ...file, name: tempFileName } : file
+    );
+    setFilteredFiles(updatedFiles);
+    // Update your state with the updated files
+    console.log("Updated files:", updatedFiles); // Replace with your state update logic
+    setEditingFileId(null); // Exit editing mode
+  };
+
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -215,6 +242,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
         console.log("data user", data.user);
         setIsMembershipActive(data.user.activeMembership);
         setMembershipDetail(data.user.memberships);
+        setUsername(data.user.username);
         console.log("details", data.user.membershipDetail);
         console.log("membership", data.user.isMembershipActive);
       } catch (err) {
@@ -249,8 +277,8 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
     console.log("krcnjrncirc", storedUser);
     console.log("krcnjrncirc", storedEmail);
 
-    setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
-    setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
+    setPeople([{ name: `${username} (you)`, email: storedEmail, role: "Owner" }]);
+    setUsers([{ name: `${username} (you)`, email: storedEmail, role: "Owner" }]);
   }, []);
 
 
@@ -563,7 +591,7 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
       const token = Cookies.get('token');
 
-  
+
 
 
 
@@ -583,18 +611,18 @@ const Dashboard = ({ folderId = 1, onFolderSelect }) => {
 
 
 
-   
+
 
 
 
       if (folderId === 0) {
         const userId = localStorage.getItem("user");
-console.log("userrrrrId",userId);
+        console.log("userrrrrId", userId);
 
         if (!userId) {
 
           throw new Error("No userId found. Please log in again.");
-  
+
         }
 
         console.log("Folder ID is 0, fetching all files for userId:", userId);
@@ -1026,8 +1054,6 @@ console.log("userrrrrId",userId);
       )
 
     );
-
-
 
     setCustomFileName(updatedFileName); // Update custom file name
 
@@ -1491,11 +1517,31 @@ console.log("userrrrrId",userId);
 
   return (
 
-    <div className="mt-2 p-4  min-h-screen bg-white">
+
+
+    <div className="mt-2 p-4   bg-white">
 
       {/* Dashboard Header */}
 
-
+      <div className="w-full flex items-center border border-gray-300 rounded-lg p-2 md:hidden">
+        <Search className="text-gray-500 mr-2" />
+        <input
+          type="text"
+          placeholder="Search"
+          className="w-full p-1 bg-transparent outline-none text-black"
+          onChange={<div className="w-full flex items-center border border-gray-300 rounded-lg p-2 sm:hidden">
+            <Search className="text-gray-500 mr-2" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full p-1 bg-transparent outline-none text-black"
+            // onChange={handlemobileSearchChange}
+            // value={mobilesearchQuery}
+            />
+          </div>}
+        // value={mobilesearchQuery}
+        />
+      </div>
 
       {folderId !== 1 && (<div className="flex flex-col">
 
@@ -1503,7 +1549,7 @@ console.log("userrrrrId",userId);
 
         <div
 
-          className="bg-blue-500 w-52 rounded-2xl my-2 p-3"
+          className="bg-blue-500 w-52 rounded-2xl my-2 p-3  "
 
           onClick={() => {
             if (isMembershipActive) {
@@ -1515,9 +1561,9 @@ console.log("userrrrrId",userId);
 
         >
 
-          <button className="flex items-center bg-blue-500 text-white px-2 py-2">
+          <button className="flex items-center bg-blue-500 text-white px-2">
 
-            <UploadCloud className="mr-2" />
+            <img src={fileupload} alt="" className="w-10 mr-2 object-contain" />
 
             Upload File
 
@@ -1541,11 +1587,11 @@ console.log("userrrrrId",userId);
 
       {/* TOGLE BTN */}
 
-      <div className="flex justify-end p-2 md:hidden">
+      <div className="flex justify-end  md:hidden">
 
         <button
 
-          className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-md text-sm  flex text-white"
+          className="px-4 py-2 text-black rounded-md text-sm  flex"
 
           onClick={toggleViewMode}
 
@@ -1561,417 +1607,581 @@ console.log("userrrrrId",userId);
 
       {/* File List */}
 
+      {Array.isArray(files) && files.length > 0 ? (
+        <div className=" flex justify-between items-center mt-2 border-gray-300">
+
+          <div className="flex items-center gap-x-2 ml-1 text-2xl text-blue-500">
+            <span>
+              {folderId === 1
+                ? "Cumulus"
+                : folderId === 0
+                  ? "Allfiles"
+                  : files[0]?.folder_name || "All files"
+              }
+            </span>
+            <span className="text-black rounded-xl text-lg mt-1 px-2.5 bg-[#EEEEEF]">
+              {`${files.length}`}
+            </span>
+          </div>
+
+
+          <div className=" flex items-center gap-2 border">
+            <div className="h-4 text-blue-500 flex items-center justify-center pl-1">
+              <img className="h-6" src={shareicon} alt="" />
+            </div>
+            <p className=" text-lg md:text-xl text-blue-500  rounded-md py-2 px-">Share Folder</p>
+          </div>
+        </div>
+      ) : (
+        <p className="text-center text-gray-500"></p>
+      )}
+
+
       {viewMode === "list" ? (
+        <>
+
+
+          <div className="grid grid-cols-1 gap-4 md:hidden p-1 max-h-[50vh] overflow-y-scroll ">
+
+            {Array.isArray(files) &&
+
+              files.map((file) => (
+
+                <div
+
+                  key={file._id}
+
+                  className="border p-2 rounded  "
+
+                >
+
+                  <div className="flex justify-between relative">
+                    <h3 className="text-lg font-medium">{file.file_name}</h3>
+
+                    {/* Ellipsis Button */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleEllipses(file._id);
+                      }}
+                    >
+                      <EllipsisVertical />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {openMenuId === file._id && (
+                      <motion.div
+                        className="absolute top-5 right-6 mt-2 w-48 bg-white shadow-lg rounded-lg text-black flex flex-col gap-y-2 p-2 z-50 "
+                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        {/* Share Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                          onClick={() => {
+                            setShare(true);
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Users className="h-4" />
+                          Share
+                        </button>
+
+                        {/* Access Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                          onClick={() => {
+                            setAccess(true);
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Folder className="h-4" />
+                          Access
+                        </button>
 
-        <div className="mt-4 bg-white shadow-md rounded sm:flex">
+                        {/* Edit Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                          onClick={() => {
+                            handleEditFile(file);
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Edit className="h-4" />
+                          Edit
+                        </button>
 
-          <table className="w-full ">
+                        {/* View Content Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                          onClick={() => {
+                            fetchFileContent(file._id);
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Eye className="h-4" />
+                          View Content
+                        </button>
 
-            <thead>
+                        {/* Delete Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-red-500"
+                          onClick={() => {
+                            setDeletebutton(true);
+                            setSelectedFileId(file._id); // Set the file ID to the state
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Trash2 className="h-4" />
+                          Delete
+                        </button>
 
-              <tr className="bg-gray-100 text-left text-[0.8rem]  border-black">
+                        {/* Download Option */}
+                        <button
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                          onClick={() => {
+                            handleDownloadFile(file._id);
+                            setOpenMenuId(null); // Close menu after selecting
+                          }}
+                        >
+                          <Download className="h-4" />
+                          Download
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
 
-                <th className="p-2 md:p-4 font-normal md:text-lg">File Name</th>
+                  <span className="">
 
-                <th className="p-2 md:p-4 font-normal md:text-lg">Folder</th>
 
-                <th className="p-2 md:p-4 font-normal md:text-lg">Date Uploaded</th>
 
-                <th className="p-2 md:p-4 font-normal md:text-lg">Contact </th>
+                    <p className="text-lg text-gray-500">{file.folder_name}</p>
 
-                <th className="p-2 md:p-4 font-normal md:text-lg">Tags</th>
+                  </span>
 
-              </tr>
+                  <span className=""><p className=" text-sm text-gray-800  ">
 
-            </thead>
+                    {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
 
-            <tbody>
+                      ? new Date(file.date_of_upload).toLocaleString('en-US', {
 
-              {Array.isArray(files) ? (
+                        weekday: 'short',
 
-                // If files is an array, use map
+                        year: 'numeric',
 
-                files.map((file) => {
+                        month: 'short',
 
-                  console.log("File Object:", file); // Debugging file object
+                        day: 'numeric',
 
-                  const isExpanded = expandedRow === file._id; // Check if the current row is expanded
+                        hour: 'numeric',
 
+                        minute: 'numeric',
 
+                        // second: 'numeric',
 
-                  return (
+                        hour12: true, // for 24-hour format
 
-                    <React.Fragment key={file._id}>
+                      })
 
-                      {/* Main Row */}
+                      : "Invalid Date"}
 
-                      <tr className="text-xs sm:text-sm">
+                  </p>
 
-                        <td className="p-0 md:p-4 flex items-center gap-0 md:gap-2">
+                  </span>
 
-                          <button
+                  {/* <span className="flex items-center gap-1">
 
-                            className="text-gray-500 hover:text-gray-800"
+Contact:
 
-                            onClick={() => handleToggleRow(file._id)} // Toggle specific file row
 
-                          >
 
-                            <ChevronDown className='{isExpanded ? "rotate-180" : ""} h-4 '/>
+</span> */}
 
-                          </button>
+                  <span className="flex justify-between">
+                    <p className="text-sm text-gray-600">tag: {file.folder_tag}</p>
+                    <p className="text-sm text-gray-600">contact: {file.folder_contact}</p>
+                  </span>
 
-                          {file.file_name}
 
-                        </td>
+                  <div className="mt-2 flex gap-2">
 
-                        <td className="p-0 md:p-4 ">{file.folder_name}</td>
 
-                        <td className="p-0 md:p-4">
 
-                          <p className=" text-xs sm:text-sm text-gray-600 mt-1">
+                  </div>
 
-                            {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
+                </div>
 
-                              ? new Date(file.date_of_upload).toLocaleString('en-US', {
+              ))}
 
-                                weekday: 'short',
+          </div>
 
-                                year: 'numeric',
 
-                                month: 'short',
+          <div className="mt-2 bg-white  rounded hidden md:flex  overflow-auto max-h-[60vh]">
 
-                                day: 'numeric',
+            <table className="w-full ">
 
-                                hour: 'numeric',
+              <thead>
 
-                                minute: 'numeric',
+                <tr className="bg-gray-100 text-left text-[0.8rem]  border-black">
 
-                                hour12: true, // for 12-hour format, set to `false` for 24-hour
+                  <th className="p-2 md:p-4 font-normal md:text-lg">File Name</th>
 
-                              })
+                  <th className="p-2 md:p-4 font-normal md:text-lg">Folder</th>
 
-                              : "Invalid Date"}
+                  <th className="p-2 md:p-4 font-normal md:text-lg">Date Uploaded</th>
 
-                          </p>
+                  <th className="p-2 md:p-4 font-normal md:text-lg">Contact </th>
 
-                        </td>
+                  <th className="p-2 md:p-4 font-normal md:text-lg">Tags</th>
 
+                </tr>
 
+              </thead>
 
-                        <td className="p-0 md:p-4">{file.sharing_contacts}</td>
+              <tbody>
 
-                        <td className="p-0 md:p-4">{file.tags}</td>
+                {Array.isArray(files) ? (
 
-                      </tr>
+                  // If files is an array, use map
 
+                  files.map((file) => {
 
+                    console.log("File Object:", file); // Debugging file object
 
-                      {/* Expanded Actions */}
+                    const isExpanded = expandedRow === file._id; // Check if the current row is expanded
 
-                      {isExpanded && (
+                    return (
 
-                        <tr className="bg-white">
-
-                          <td colSpan="5" className="p-4">
-
-                            <div className="flex gap-4 items-center">
-
-                              {/* Share Button */}
-
-
-
-                              {!need && (
-
-                                <>
-
-                                  <button
-
-                                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                    onClick={() => setShare(true)}
-
-                                  >
-
-                                    <Users className="h-4" />
-
-                                  </button>
-
-
-
-                                  <button
-
-                                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                    onClick={() => setAccess(true)}
-
-                                  >
-
-                                    <Folder className="h-4" />
-
-                                  </button>
-
-
-
-                                  <button
-
-                                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                  // onClick={() => handleEditFile(file)}
-
-                                  >
-
-                                    <Edit className="h-4" />
-
-                                  </button>
-
-
-
-                                  <button
-
-                                    className="flex items-center gap-2 text-gray-600 hover:text-red-500"
-
-                                    onClick={() => {
-
-                                      setDeletebutton(true);
-
-                                      console.log("Deleting file with ID:", file._id); // Debugging log
-
-                                      setSelectedFileId(file._id); // Set the file ID to the state
-
-                                    }}
-
-                                  >
-
-                                    <Trash2 className="h-4" />
-
-                                  </button>
-                                  <button
-
-                                    className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                    onClick={() => handleDownloadFile(file._id)}
-
-                                  >
-
-                                    <Download className="h-4" />
-
-                                  </button>
-
-                                </>
-
-                              )}
-
-
-
-
-
-                              {/* View Content Button */}
-
-                              <button
-
-                                className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                                onClick={() => fetchFileContent(file._id)}
-
-                              >
-
-                                <Eye className="h-4" />
-
-                              </button>
-
-
-
-
-
-                            </div>
-
+                      <React.Fragment key={file._id}>
+                        {/* Main Row */}
+                        <tr
+                          className={`text-xs sm:text-sm border  ${isExpanded ? "bg-blue-100 border-blue-100" : ""
+                            } transition-all duration-100`}
+                        >
+                          <td className="p-0 md:p-4 flex items-center gap-0 md:gap-2">
+                            <button
+                              className="text-gray-500 hover:text-gray-800"
+                              onClick={() => handleToggleRow(file._id)}
+                            >
+                              <ChevronDown
+                                className={`${isExpanded ? "rotate-180" : ""} h-5 transition-transform`}
+                              />
+                            </button>
+                            {file.file_name}
+                            {editingFileId === file.id ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={tempFileName}
+                                  onChange={(e) => setTempFileName(e.target.value)}
+                                  className="border border-gray-300 rounded p-1"
+                                  autoFocus
+                                />
+                                <button
+                                  className="text-green-500 hover:text-green-700"
+                                  onClick={() => handleSaveFileName(file.id)}
+                                >
+                                  <Check className="h-5" />
+                                </button>
+                              </div>
+                            ) : (
+                              file.name
+                            )}
                           </td>
 
+
+                          <td className="p-0 md:p-4">
+                            <div
+                              className={`bg-[#EEEEEF] rounded-xl px-3 py-1 inline-block transition-all duration-300 ${isExpanded ? "bg-white" : "bg-[#EEEEEF]"
+                                }`}
+                            >
+                              {folderId === 1
+                                ? "Cumulus"
+                                : folderId === 0
+                                  ? "Allfiles"
+                                  : files[0]?.folder_name || "All files"}
+                            </div>
+                          </td>
+                          <td className="p-0 md:p-4">
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                              {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
+                                ? new Date(file.date_of_upload).toLocaleString("en-US", {
+                                  weekday: "short",
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                  hour12: true, // for 12-hour format
+                                })
+                                : "Invalid Date"}
+                            </p>
+                          </td>
+                          <td className="p-0 md:p-4">{file.sharing_contacts}</td>
+                          <td className="p-0 md:p-4">{file.tags}</td>
                         </tr>
 
-                      )}
+                        {/* Expanded Row */}
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan="5" className="p-4 border-l border-r border border-blue-100 bg-blue-100">
+                              <div className="flex gap-4 items-center">
+                                {!need && (
+                                  <>
+                                    <button
+                                      className="relative group flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                      onClick={() => setShare(true)}
+                                    >
+                                      <Users className="h-4" />
+                                      <span className="absolute bottom-[-45px] left-2/3  transform -translate-x-1/2 hidden min-w-[110px] group-hover:block bg-white text-black text-xs py-1 px-1 rounded shadow">
+                                        Share with Designee
+                                      </span>
+                                    </button>
+                                    <button
+                                      className="relative group flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                      onClick={() => setAccess(true)}
+                                    >
+                                      <Folder className="h-4" />
+                                      <span className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 hidden group-hover:block min-w-[80px] bg-white text-black text-xs py-1 px-2 rounded shadow">
+                                        Full Access
+                                      </span>
+                                    </button>
+                                    <button
+                                      className="relative group flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                      // onClick={() => handleEditnameFile(file)}
+                                    >
+                                      <Edit className="h-4" />
+                                      <span className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white min-w-[100px] text-black text-xs py-1 px-1 rounded shadow">
+                                        Edit Document
+                                      </span>
+                                    </button>
+
+                                    <button
+                                      className="relative group flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                      onClick={() => handleDownloadFile(file._id)}
+                                    >
+                                      <Download className="h-4" />
+                                      <span className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-xs py-1 px-2 rounded shadow">
+                                        Download
+                                      </span>
+                                    </button>
+                                  </>
+                                )}
+
+                                <button
+                                  className="relative group flex items-center gap-2 text-gray-600 hover:text-blue-500"
+                                  onClick={() => fetchFileContent(file._id)}
+                                >
+                                  <Eye className="h-4" />
+                                  <span className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-xs py-1 px-2 rounded shadow">
+                                    View
+                                  </span>
+                                </button>
+
+                                <button
+                                  className="relative group flex items-center gap-2 text-gray-600 hover:text-red-500"
+                                  onClick={() => {
+                                    setDeletebutton(true);
+                                    console.log("Deleting file with ID:", file._id);
+                                    setSelectedFileId(file._id);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 text-red-700" />
+                                  <span className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black text-xs py-1 px-2 rounded shadow">
+                                    Delete
+                                  </span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+
+                        )}
+                      </React.Fragment>
+
+
+                    );
+
+                  })
+
+                ) : (
+
+                  // If files is not an array (single file object), render the row without map
+
+                  <React.Fragment key={files._id}>
+
+                    {/* Main Row */}
+
+                    <tr className="text-sm">
+
+                      <td className="p-0 md:p-4 flex items-center gap-0 md:gap-2">
+
+                        <button
+
+                          className="text-gray-500 hover:text-gray-800"
+
+                          onClick={() => handleToggleRow(files._id)} // Toggle specific file row
+
+                        >
 
-                    </React.Fragment>
+                          <ChevronDown className={expandedRow === files._id ? "rotate-180" : ""} />
 
-                  );
+                        </button>
 
-                })
-
-              ) : (
-
-                // If files is not an array (single file object), render the row without map
-
-                <React.Fragment key={files._id}>
-
-                  {/* Main Row */}
-
-                  <tr className="text-sm">
-
-                    <td className="p-0 md:p-4 flex items-center gap-0 md:gap-2">
-
-                      <button
-
-                        className="text-gray-500 hover:text-gray-800"
-
-                        onClick={() => handleToggleRow(files._id)} // Toggle specific file row
-
-                      >
-
-                        <ChevronDown className={expandedRow === files._id ? "rotate-180" : ""} />
-
-                      </button>
-
-                      {files.file_name}
-
-                    </td>
-
-                    <td className="p-0 md:p-4">{files.folder_name}</td>
-
-                    <td className="p-0 md:p-4">{files.date_of_upload}</td>
-
-                    <td className="p-0 md:p-4">{files.sharing_contacts}</td>
-
-                    <td className="p-0 md:p-4">{files.tags}</td>
-
-                  </tr>
-
-
-
-                  {/* Expanded Actions */}
-
-                  {expandedRow === files._id && (
-
-                    <tr className="bg-white">
-
-                      <td colSpan="5" className="p-4">
-
-                        <div className="flex gap-4 items-center">
-
-                          {/* Share Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                            onClick={() => setShare(true)}
-
-                          >
-
-                            <Users className="h-4" />
-
-                          </button>
-
-
-
-                          {/* Access Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                            onClick={() => setAccess(true)}
-
-                          >
-
-                            <Folder className="h-4" />
-
-                          </button>
-
-
-
-                          {/* Edit Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                            onClick={() => handleEditFile(files)}
-
-                          >
-
-                            <Edit className="h-4" />
-
-                          </button>
-
-
-
-                          {/* View Content Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                            onClick={() => fetchFileContent(files._id)}
-
-                          >
-
-                            <Eye className="h-4" />
-
-                          </button>
-
-
-
-                          {/* Delete Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-red-500"
-
-                            onClick={() => {
-
-                              setDeletebutton(true);
-
-                              console.log("Deleting file with ID:", files._id); // Debugging log
-
-                              setSelectedFileId(files._id); // Set the file ID to the state
-
-                            }}
-
-                          >
-
-                            <Trash2 className="h-4" />
-
-                          </button>
-
-
-
-                          {/* Download Button */}
-
-                          <button
-
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
-
-                            onClick={() => handleDownloadFile(files._id)}
-
-                          >
-
-                            <Download className="h-4" />
-
-                          </button>
-
-                        </div>
+                        {files.file_name}
 
                       </td>
 
+                      <td className="p-0 md:p-4">{files.folder_name}</td>
+
+                      <td className="p-0 md:p-4">{files.date_of_upload}</td>
+
+                      <td className="p-0 md:p-4">{files.sharing_contacts}</td>
+
+                      <td className="p-0 md:p-4">{files.tags}</td>
+
                     </tr>
 
-                  )}
-
-                </React.Fragment>
-
-              )}
 
 
+                    {/* Expanded Actions */}
+
+                    {expandedRow === files._id && (
+
+                      <tr className="bg-white">
+
+                        <td colSpan="5" className="p-4">
+
+                          <div className="flex gap-4 items-center">
+
+                            {/* Share Button */}
+
+                            <button
+
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+                              onClick={() => setShare(true)}
+
+                            >
+
+                              <Users className="h-4" />
+
+                            </button>
 
 
-            </tbody>
 
-          </table>
+                            {/* Access Button */}
 
-        </div>
+                            <button
 
-      ) : (<div className="grid grid-cols-2 gap-4 sm:hidden p-4">
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+                              onClick={() => setAccess(true)}
+
+                            >
+
+                              <Folder className="h-4" />
+
+                            </button>
+
+
+
+                            {/* Edit Button */}
+
+                            <button
+
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+                              onClick={() => handleEditFile(files)}
+
+                            >
+
+                              <Edit className="h-4" />
+
+                            </button>
+
+
+
+                            {/* View Content Button */}
+
+                            <button
+
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+                              onClick={() => fetchFileContent(files._id)}
+
+                            >
+
+                              <Eye className="h-4" />
+
+                            </button>
+
+
+
+                            {/* Delete Button */}
+
+                            <button
+
+                              className="flex items-center gap-2 text-gray-600 hover:text-red-500"
+
+                              onClick={() => {
+
+                                setDeletebutton(true);
+
+                                console.log("Deleting file with ID:", files._id); // Debugging log
+
+                                setSelectedFileId(files._id); // Set the file ID to the state
+
+                              }}
+
+                            >
+
+                              <Trash2 className="h-4" />
+
+                            </button>
+
+
+
+                            {/* Download Button */}
+
+                            <button
+
+                              className="flex items-center gap-2 text-gray-600 hover:text-blue-500"
+
+                              onClick={() => handleDownloadFile(files._id)}
+
+                            >
+
+                              <Download className="h-4" />
+
+                            </button>
+
+                          </div>
+
+                        </td>
+
+                      </tr>
+
+                    )}
+
+                  </React.Fragment>
+
+                )}
+
+
+
+
+              </tbody>
+
+            </table>
+
+          </div>
+        </>
+
+
+      ) : (<div className="grid grid-cols-2 gap-2 md:hidden p-2  max-h-[50vh] overflow-y-scroll">
 
         {Array.isArray(files) &&
 
@@ -1981,19 +2191,33 @@ console.log("userrrrrId",userId);
 
               key={file._id}
 
-              className="bg-gray-50 p-4 rounded  shadow-lg"
+              className="bg-white p-4 rounded border "
 
             >
 
               <div className="flex justify-between relative">
-                <h3 className="text-lg font-medium">{file.file_name}</h3>
+                <span
+                  className="overflow-hidden"
+                  style={{ maxWidth: '20vw' }} // Adjust the width as needed
+                >
+                  <p
+                    className="text-lg text-gray-600 truncate"
+                    style={{
+                      whiteSpace: 'nowrap',
+                      // overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    <h3 className="text-lg font-medium">{file.file_name}</h3>
+                  </p>
+                </span>
 
                 {/* Ellipsis Button */}
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    e.stopPropagation(); 
-                    toggleEllipses(file._id); 
+                    e.stopPropagation();
+                    toggleEllipses(file._id);
                   }}
                 >
                   <EllipsisVertical />
@@ -2002,7 +2226,7 @@ console.log("userrrrrId",userId);
                 {/* Dropdown Menu */}
                 {openMenuId === file._id && (
                   <motion.div
-                    className="absolute top-5  mt-2 w-48 bg-white shadow-lg rounded-lg text-black flex flex-col gap-y-2 p-2 z-50 "
+                    className="absolute top-8  mt-2 w-48 bg-white shadow-lg rounded-lg text-black flex flex-col gap-y-2 p-2 z-50 "
                     initial={{ opacity: 0, scale: 0.9, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: -10 }}
@@ -2084,15 +2308,23 @@ console.log("userrrrrId",userId);
                 )}
               </div>
 
-              <span className="flex items-center gap-2">
-
-                Folder:
-
-                <p className="text-sm text-gray-600">{file.folder_name}</p>
-
+              <span
+                className="overflow-hidden"
+                style={{ maxWidth: '200px' }} // Adjust the width as needed
+              >
+                <p
+                  className="text-lg text-gray-600 truncate"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {file.folder_name}
+                </p>
               </span>
 
-              <span className="flex gap-2">Date:<p className=" text-xs text-gray-600  mt-1">
+              <span className=""><p className=" text-[1rem] text-gray-600  ">
 
                 {file.date_of_upload && !isNaN(new Date(file.date_of_upload))
 

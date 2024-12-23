@@ -30,6 +30,7 @@ const Voicememo = () => {
   const analyserRef = useRef(null);
   const animationFrameRef = useRef(null);
   const canvasRef = useRef(null);
+  
   const audioContextRef = useRef(null);
   const sourceRef = useRef(null);
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state
@@ -79,19 +80,103 @@ const Voicememo = () => {
     setPeople([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
     setUsers([{ name: `${storedUser} (you)`, email: storedEmail, role: "Owner" }]);
   }, []);
+  // const handleToggleRecording = () => {
+  //   if (!isRecording && !isStopped) {
+  //     // Start recording
+  //     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+  //       const mediaRecorder = new MediaRecorder(stream);
+  //       mediaRecorderRef.current = mediaRecorder;
+  //       mediaRecorder.start();
+  //       audioChunks.current = [];
+  //       mediaRecorder.ondataavailable = (event) => {
+  //         audioChunks.current.push(event.data);
+  //         startTimeRef.current = Date.now();
+  //       };
+
+  //       // Web Audio API for frequency analysis
+  //       const audioContext = new AudioContext();
+  //       audioContextRef.current = audioContext;
+  //       const analyser = audioContext.createAnalyser();
+  //       analyser.fftSize = 256;
+  //       analyserRef.current = analyser;
+  //       const source = audioContext.createMediaStreamSource(stream);
+  //       source.connect(analyser);
+  //       sourceRef.current = source;
+  //       const dataArray = new Uint8Array(analyser.frequencyBinCount);
+  //       const drawFrequency = () => {
+  //         analyser.getByteFrequencyData(dataArray);
+  //         setFrequencyData([...dataArray]);
+  //         animationFrameRef.current = requestAnimationFrame(drawFrequency);
+  //       };
+  //       drawFrequency();
+  //       setIsRecording(true);
+  //       setShowPopup(true);
+
+  //       timerRef.current = setInterval(() => {
+  //         setDuration((prevTime) => prevTime + 1);
+  //       }, 1000);
+  //     });
+  //   } else if (isRecording) {
+  //     // Stop recording
+  //     if (mediaRecorderRef.current) {
+  //       mediaRecorderRef.current.stop();
+  //       mediaRecorderRef.current.onstop = () => {
+  //         const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
+  //         const url = URL.createObjectURL(audioBlob);
+  //         setAudioURL(url);
+
+  //         // Calculate duration
+  //         const endTime = Date.now();
+  //         durationRef.current = Math.round((endTime - startTimeRef.current) / 1000);
+
+  //         setIsRecording(false);
+  //         setIsStopped(true); // Recording stopped
+  //         cancelAnimationFrame(animationFrameRef.current);
+
+  //         // Stop all audio tracks to turn off the microphone
+  //         if (mediaRecorderRef.current.stream) {
+  //           mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+  //         }
+
+  //         if (audioContextRef.current) {
+  //           audioContextRef.current.close();
+  //         }
+
+  //         // Stop the timer
+  //         clearInterval(timerRef.current);
+  //       };
+  //     }
+  //   } else if (isStopped) {
+  //     // Re-recording
+  //     setIsStopped(false);
+  //     setAudioURL(null); // Clear the previous audio URL
+  //     // setElapsedTime(0); // Reset elapsed time
+  //     setDuration((prevTime) => prevTime + 1);
+  //     console.log(duration);
+  //     console.log(setDuration);
+
+  //   }
+  // };
+  const handleSubmit = () => {
+    // alert(`Designee: ${designee}\nMessage: ${message}\nNotify: ${notify}`);
+    setShare(false);
+  };
   const handleToggleRecording = () => {
+    setError(""); 
     if (!isRecording && !isStopped) {
-      // Start recording
+      // Start a new recording
       navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
+        audioChunks.current = []; // Clear previous chunks
+        setDuration(0); // Reset duration
+        startTimeRef.current = Date.now(); // Reset start time
+  
         mediaRecorder.start();
-        audioChunks.current = [];
         mediaRecorder.ondataavailable = (event) => {
           audioChunks.current.push(event.data);
-          startTimeRef.current = Date.now();
         };
-
+  
         // Web Audio API for frequency analysis
         const audioContext = new AudioContext();
         audioContextRef.current = audioContext;
@@ -101,6 +186,7 @@ const Voicememo = () => {
         const source = audioContext.createMediaStreamSource(stream);
         source.connect(analyser);
         sourceRef.current = source;
+  
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         const drawFrequency = () => {
           analyser.getByteFrequencyData(dataArray);
@@ -108,59 +194,127 @@ const Voicememo = () => {
           animationFrameRef.current = requestAnimationFrame(drawFrequency);
         };
         drawFrequency();
+  
         setIsRecording(true);
         setShowPopup(true);
-
+  
         timerRef.current = setInterval(() => {
           setDuration((prevTime) => prevTime + 1);
         }, 1000);
       });
     } else if (isRecording) {
-      // Stop recording
+      // Stop current recording
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stop();
         mediaRecorderRef.current.onstop = () => {
           const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
           const url = URL.createObjectURL(audioBlob);
           setAudioURL(url);
-
+  
           // Calculate duration
           const endTime = Date.now();
           durationRef.current = Math.round((endTime - startTimeRef.current) / 1000);
-
+  
           setIsRecording(false);
           setIsStopped(true); // Recording stopped
           cancelAnimationFrame(animationFrameRef.current);
-
+  
           // Stop all audio tracks to turn off the microphone
           if (mediaRecorderRef.current.stream) {
             mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
           }
-
+  
           if (audioContextRef.current) {
             audioContextRef.current.close();
           }
-
+  
           // Stop the timer
           clearInterval(timerRef.current);
         };
       }
     } else if (isStopped) {
-      // Re-recording
+      // Reset everything for a new recording
       setIsStopped(false);
       setAudioURL(null); // Clear the previous audio URL
-      // setElapsedTime(0); // Reset elapsed time
-      setDuration((prevTime) => prevTime + 1);
-      console.log(duration);
-      console.log(setDuration);
-
+      mediaRecorderRef.current = null; // Reset media recorder
+      audioChunks.current = []; // Clear old chunks
+      setDuration(0); // Reset duration
+      startTimeRef.current = null; // Reset start time
     }
   };
-  const handleSubmit = () => {
-    // alert(`Designee: ${designee}\nMessage: ${message}\nNotify: ${notify}`);
-    setShare(false);
-  };
+  
+  
+  
+  const saveRecording = async () => {
+    setError(""); 
+    if (audioName.trim() === '') {
+      setError('Please enter a name for the recording.');
+      return;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      setError('Please stop the recording before saving.');
+      return;
+    }
 
+    try {
+      const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
+      const token = Cookies.get('token');
+  
+      if (!token) {
+        alert('No token found. Please log in.');
+        return;
+      }
+  
+      if (isNaN(duration) || duration <= 0) {
+        setError('Invalid audio duration.');
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append('voice_name', audioName);
+      formData.append('voice_file', audioBlob);
+      formData.append('duration', duration);
+  
+      const response = await axios.post(
+        `${API_URL}/api/voice-memo/upload-voice`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200 || response.status === 201) {
+        const { fileName, size, date } = response.data;
+  
+        // Update the audio files list with the new recording
+        setAudioFiles((prev) => [
+          ...prev,
+          { name: fileName, size, date, url: audioURL },
+        ]);
+  
+        // Resetting after save
+        setAudioURL(null);
+        setAudioName('');
+        setShowPopup(false);
+        setDuration(0); // Reset duration
+        audioChunks.current = []; // Clear recorded chunks
+        mediaRecorderRef.current = null; // Reset media recorder
+        startTimeRef.current = null; // Reset start time
+  
+        fetchAudioFiles(); // Fetch updated list after saving
+      } else {
+        console.error(`Unexpected response: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error saving recording:', error.response || error.message);
+      alert('Failed to save recording. Please try again.');
+    }
+  };
+  
+  
   const handleDesigneeChange = (e) => setDesignee(e.target.value);
   const handleMessageChange = (e) => setMessage(e.target.value);
   const handleNotifyChange = () => setNotify(!notify);
@@ -226,68 +380,68 @@ const Voicememo = () => {
 
 
 
-  const saveRecording = async () => {
-    if (audioName.trim() === '') {
-      alert('Please enter a name for the recording.');
-      return;
-    }
+  // const saveRecording = async () => {
+  //   if (audioName.trim() === '') {
+  //     alert('Please enter a name for the recording.');
+  //     return;
+  //   }
 
-    try {
-      const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
-      const token = Cookies.get('token');
+  //   try {
+  //     const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
+  //     const token = Cookies.get('token');
 
-      if (!token) {
-        alert('No token found. Please log in.');
-        return;
-      }
+  //     if (!token) {
+  //       alert('No token found. Please log in.');
+  //       return;
+  //     }
 
-      const finalDuration = duration;
+  //     const finalDuration = duration;
 
-      if (isNaN(duration)) {
-        alert('Invalid audio duration.');
-        return;
-      }
+  //     if (isNaN(duration)) {
+  //       alert('Invalid audio duration.');
+  //       return;
+  //     }
 
-      const formData = new FormData();
-      formData.append('voice_name', audioName);
-      formData.append('voice_file', audioBlob);
-      formData.append('duration', finalDuration);
+  //     const formData = new FormData();
+  //     formData.append('voice_name', audioName);
+  //     formData.append('voice_file', audioBlob);
+  //     formData.append('duration', finalDuration);
 
-      const response = await axios.post(
-        `${API_URL}/api/voice-memo/upload-voice`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  //     const response = await axios.post(
+  //       `${API_URL}/api/voice-memo/upload-voice`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           'Content-Type': 'multipart/form-data',
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
 
-      if (response.status === 200 || response.status === 201) {
-        const { fileName, size, date } = response.data;
+  //     if (response.status === 200 || response.status === 201) {
+  //       const { fileName, size, date } = response.data;
 
-        // Update the audio files list with the new recording
-        setAudioFiles((prev) => [
-          ...prev,
-          { name: fileName, size, date, url: audioURL },
-        ]);
+  //       // Update the audio files list with the new recording
+  //       setAudioFiles((prev) => [
+  //         ...prev,
+  //         { name: fileName, size, date, url: audioURL },
+  //       ]);
 
-        setAudioURL(null);
-        setAudioName('');
-        setShowPopup(false);
-        fetchAudioFiles(); // Fetch updated list after saving
-        // setDuration(); // Reset timer
-        setIsRecording(false);
+  //       setAudioURL(null);
+  //       setAudioName('');
+  //       setShowPopup(false);
+  //       fetchAudioFiles(); // Fetch updated list after saving
+  //       // setDuration(); // Reset timer
+  //       setIsRecording(false);
 
-      } else {
-        console.error`(Unexpected response: ${response.status})`;
-      }
-    } catch (error) {
-      console.error('Error saving recording:', error.response || error.message);
-      alert('Failed to save recording. Please try again.');
-    }
-  };
+  //     } else {
+  //       console.error`(Unexpected response: ${response.status})`;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error saving recording:', error.response || error.message);
+  //     alert('Failed to save recording. Please try again.');
+  //   }
+  // };
   // Fetch audio files on component mount
   useEffect(() => {
     fetchAudioFiles();
@@ -496,6 +650,7 @@ const Voicememo = () => {
               onChange={(e) => setAudioName(e.target.value)}
               className="p-2 border rounded-md w-full"
             />
+             {error && <p className="text-red-500 text-sm mt-2">{error}</p>} {/* Inline error message */}
             <button
               onClick={saveRecording}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md w-full"

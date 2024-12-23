@@ -169,12 +169,12 @@ const Updatepassword = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-screen text-white  md:justify-center">
+        <div className="flex flex-col md:flex-row h-screen text-white justify-center md:justify-center">
             {/* Left Section */}
-            <div className="md:w-2/4 w-full flex flex-col justify-center items-center p-3 md:p-6">
-                <div className="bg-white text-black p-6 rounded-lg w-full max-w-md">
-                    <div className="flex items-center mb-6">
-                        <img src={logo} alt="Cumulus Logo" className="h-10 w-full" />
+            <div className="lg:w-2/4 w-full flex flex-col justify-center items-center p-3 md:p-6">
+                <div className="bg-white text-black p-10 md:p-6 rounded-lg min-w-full max-w-md">
+                    <div className="flex items-center mb-5 lg:w-full sm-w-[80%] w-full">
+                        <img src={logo} alt="Cumulus Logo" className="min-h-10 w-full object-fit" />
                     </div>
                     <h2 className="text-black text-2xl font-bold mb-2">Forgot Password</h2>
                     <p className="text-gray-600 mb-6">Enter your email to reset your password.</p>
@@ -285,7 +285,7 @@ const Updatepassword = () => {
                 <img
                     src={rightsignup}
                     alt="Illustration"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fit"
                 />
             </div>
           </div>

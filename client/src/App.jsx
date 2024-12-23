@@ -6,6 +6,7 @@ import Updatepassword from './Component/Auth/Updatepassword';
 import Enterdashboard from './Component/Auth/Enterdashboard';
 import Mainlayout from './layout/Mainlayout';
 import Thankyou from './Component/Auth/Thankyou';
+import Subscription from './Component/Main/Subscription';
 const App = () => {
   return (
     <Router>
@@ -13,6 +14,7 @@ const App = () => {
         {/* Auth Routes */}
         <Route path="/" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/Subscription" element={<Subscription />} />
         <Route path="/updatepassword" element={<Updatepassword />} />
         <Route path="/enterdashboard" element={<Enterdashboard />} />
         <Route path="/updatepassword" element={<Updatepassword />} />
